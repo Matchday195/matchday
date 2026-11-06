@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '1.0.1';
+  const APP_VERSION = '1.0.2';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -193,6 +193,7 @@
     const items = [['matches', 'Matches', 'ball'], ['home', 'Home', 'home'], ['skills', 'Skills', 'book']];
     return `<nav class="nav" aria-label="Main">${items.map(([r, l, i]) => `<a href="#${r}" ${active === r ? 'aria-current="page"' : ''}>${icon(i, 22)}${l}</a>`).join('')}</nav>`;
   }
+  const demoBanner = () => `<div class="demo" role="note"><b>DEMO DATA</b><span>These games, scores and transfers are made up for testing. They are not real yet.</span></div>`;
   const backBtn = (href, label) => `<a class="iconbtn" href="${href}" aria-label="${label || 'Back'}">${icon('back')}</a>`;
   const offlineBanner = () => navigator.onLine ? '' : `<div class="offline-banner">Offline · showing saved data from ${fmtClock(DataSource.lastUpdated())}</div>`;
   function switchBtn(id, onState, label) { return `<button type="button" class="switch" data-sw="${id}" aria-pressed="${!!onState}" aria-label="${esc(label)}"></button>`; }
@@ -263,11 +264,11 @@
     const a = getAlerts(); const alertCount = Object.values(a.matches).filter(Boolean).length;
     const lines = (arr) => arr.map((l) => `<div class="ln"><b>${esc(l[0])}</b><span>${esc(l[1])}</span></div>`).join('');
     const cubes = [
-      { id: 'live', t: 'Live Matches', s: live.length ? live.length + ' live now' : 'No live games', c: 'var(--c-live)', href: '#matches', ic: 'ball',
+      { id: 'live', t: 'Live Matches', s: 'DEMO · ' + (live.length ? live.length + ' live now' : 'no live games'), c: 'var(--c-live)', href: '#matches', ic: 'ball',
         l: live.slice(0, 2).map((f) => [T(f.home).name + ' ' + f.hs + '–' + f.as + ' ' + T(f.away).name, liveLabel(f) + ' · ' + f.league]) },
       { id: 'cal', t: 'My Calendar', s: nextDay ? 'Next: ' + DOW[nextDay.getDay()] + ', ' + MONTHS[nextDay.getMonth()].slice(0, 3) + ' ' + nextDay.getDate() : 'No games soon', c: 'var(--c-cal)', href: '#calendar', ic: 'cal',
         l: mine.slice(0, 2).map((f) => [matchTitle(f), DOW[parseYmd(f.date).getDay()] + ' · ' + fmtTime(f.time)]) },
-      { id: 'tr', t: 'Transfer News', s: tr.length + ' stories', c: 'var(--c-tr)', href: '#transfers', ic: 'swap',
+      { id: 'tr', t: 'Transfer News', s: 'DEMO · ' + tr.length + ' stories', c: 'var(--c-tr)', href: '#transfers', ic: 'swap',
         l: tr.slice(0, 2).map((x) => [x.name + ' → ' + x.to, x.type + ' · from ' + x.from]) },
       { id: 'sk', t: 'Skills', s: sk.name.split(' (')[0] + ' · ' + (stepNow + 1) + '/' + sk.steps.length, c: 'var(--c-sk)', href: '#skill/' + sk.id, ic: 'book',
         l: [['Continue: ' + sk.name.split(' (')[0], 'Step ' + (stepNow + 1) + ' · ' + sk.steps[stepNow][0]], [DataSource.skills().length + ' skills saved offline', 'Shooting, dribbling, passing']] },
@@ -284,7 +285,7 @@
           <a class="iconbtn" href="#settings" aria-label="Settings">${icon('gear')}</a>
           <a href="#profile" aria-label="Your profile">${avatarHtml(p)}</a></header>
         ${offlineBanner()}
-        <main class="scroll">
+        <main class="scroll">${demoBanner()}
           <div><h1 class="page">Hey, ${esc(p.name)}</h1><span class="muted small">Updated ${fmtClock(upd)}</span></div>
           <div class="cubes">${cubes.map((c) => `<div class="cube ${st.open[c.id] ? 'open' : ''}" style="--c:${c.c}">
             <div class="cube-inner">
@@ -326,7 +327,7 @@
       html: `<div class="screen">
         <header class="topbar"><span class="brand">${LOGO(30)}<span>Match<b>day</b></span></span><button type="button" class="iconbtn" id="refreshBtn" aria-label="Refresh scores">${icon('refresh')}</button></header>
         ${offlineBanner()}
-        <main class="scroll">
+        <main class="scroll">${demoBanner()}
           <label class="search">${icon('search', 18)}<input id="q" type="search" placeholder="Search teams or leagues" aria-label="Search teams or leagues" value="${esc(st.q)}"></label>
           <div class="daystrip">${days.map(({ o, d }) => `<button type="button" data-day="${o}" aria-pressed="${st.day === o}"><span>${o === 0 ? 'Today' : DOW[d.getDay()]}</span><span>${d.getDate()}</span></button>`).join('')}</div>
           <div class="chips">${['All'].concat(DataSource.leagues().map((l) => l.name)).map((l) => `<button type="button" class="chip" data-league="${esc(l)}" aria-pressed="${st.league === l}">${esc(l)}</button>`).join('')}</div>
@@ -403,7 +404,7 @@
           <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div class="bigscore">${f.hs != null ? f.hs + ' – ' + f.as : 'vs'}</div>${f.status === 'live' ? `<span class="live-pill">${liveLabel(f)}</span>` : `<span class="small muted">${f.status === 'ft' ? 'Full time' : fmtTime(f.time)}</span>`}</div>
           <div class="side">${crest(f.away, 52)}${esc(T(f.away).name)}</div></div>
         <div style="padding:0 20px"><div class="seg">${tabs.map(([k, l]) => `<button type="button" data-tab="${k}" aria-pressed="${st.tab === k}">${l}</button>`).join('')}</div></div>
-        <main class="scroll">${body}<p class="note">Sample match data</p></main></div>`,
+        <main class="scroll">${demoBanner()}${body}</main></div>`,
       mount() {
         on('[data-tab]', 'click', (e, el) => { st.tab = el.dataset.tab; stopReplay(); render(); });
         on('[data-player]', 'click', (e, el) => { st.player = Number(el.dataset.player); render(); });
@@ -443,7 +444,7 @@
     return {
       html: `<div class="screen">
         <header class="topbar">${backBtn('#home', 'Back to home')}<span class="title">My calendar</span><span class="spacer44"></span></header>
-        <main class="scroll">
+        <main class="scroll">${demoBanner()}
           <div class="chips">${p.teams.map((c) => `<button type="button" class="teamchip" data-team="${c}" aria-pressed="${!st.hidden[c]}">${crest(c, 28)}${esc(T(c).name)}</button>`).join('')}<a class="chip" href="#profile" style="display:flex;align-items:center;border-style:dashed;color:var(--muted)">+ Add team</a></div>
           <div class="seg"><button type="button" data-cmode="month" aria-pressed="${st.mode === 'month'}">Month</button><button type="button" data-cmode="week" aria-pressed="${st.mode === 'week'}">This matchweek</button></div>
           ${st.mode === 'month' ? `<div class="card cal"><div class="row between" style="padding:0 2px 10px"><button type="button" class="iconbtn" data-mon="-1" aria-label="Previous month">${icon('back', 18)}</button><div style="text-align:center"><b>${MONTHS[st.m]} ${st.y}</b><div class="tiny muted">${monthCount} matches</div></div><button type="button" class="iconbtn" data-mon="1" aria-label="Next month">${icon('chev', 18)}</button></div>
@@ -518,7 +519,7 @@
     return {
       html: `<div class="screen">
         <header class="topbar">${backBtn('#home', 'Back to home')}<span class="title">Transfer news</span><span class="spacer44"></span></header>
-        <main class="scroll">
+        <main class="scroll">${demoBanner()}
           ${banner ? `<div class="window">${icon('clock', 20)}<span>${banner}</span></div>` : ''}
           <div class="seg"><button type="button" data-scope="all" aria-pressed="${st.scope === 'all'}">All teams</button><button type="button" data-scope="mine" aria-pressed="${st.scope === 'mine'}">My teams</button></div>
           <div class="chips">${[['All', 'All'], ['Done deal', 'Done deals'], ['Rumour', 'Rumours'], ['Loan', 'Loans']].map(([k, l]) => `<button type="button" class="chip" data-type="${k}" aria-pressed="${st.type === k}">${l}</button>`).join('')}</div>

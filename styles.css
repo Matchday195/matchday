@@ -231,3 +231,5 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .offline-banner { margin: 0 20px; padding: 8px 12px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); font-size: .8em; color: var(--muted); text-align: center; }
 @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } .bar.run > div { animation-duration: 3.5s !important; } }
+.demo { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 12px; background: #FFD23F; color: #1A1400; font-size: .85em; line-height: 1.35; }
+.demo b { font-size: .95em; letter-spacing: .6px; }

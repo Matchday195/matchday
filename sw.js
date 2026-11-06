@@ -1,6 +1,6 @@
 /* Matchday service worker: keeps the app working offline.
    Bump VERSION whenever app files change so phones pick up the update. */
-const VERSION = 'matchday-v1.0.1';
+const VERSION = 'matchday-v1.0.2';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'data.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
