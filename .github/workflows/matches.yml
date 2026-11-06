@@ -1,5 +1,6 @@
 name: Update matches
 
+
 # Fetches real fixtures, scores and tables from football-data.org and saves them on the
 # separate "data" branch, so frequent score updates never rebuild the website itself.
 on:
