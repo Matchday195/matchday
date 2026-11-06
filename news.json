@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-06T22:41:15Z",
+ "updated": "2026-11-06T23:38:59Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -30,6 +30,15 @@
    "source": "The Guardian",
    "published": "2026-11-06T11:00:51Z",
    "teams": []
+  },
+  {
+   "title": "Transfer Centre LIVE! Moyes discusses Grealish situation after Coventry win",
+   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
+   "source": "Sky Sports",
+   "published": "2026-11-05T17:15:00Z",
+   "teams": [
+    "COV"
+   ]
   },
   {
    "title": "Ten of the best-value deals from this summer’s transfer window",
