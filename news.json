@@ -1,46 +1,16 @@
 {
- "updated": "2026-11-06T05:44:36Z",
+ "updated": "2026-11-06T05:45:39Z",
  "sources": [
   "Sky Sports",
+  "The Guardian",
   "The Guardian"
  ],
  "items": [
   {
-   "title": "Amorim fumes at his Milan team after home Europa League loss to Ferencvaros",
-   "link": "https://www.skysports.com/football/live-blog/11095/13575723/european-football-news-and-transfers-barcelona-real-madrid-psg-bayern-munich-latest-and-more",
-   "source": "Sky Sports",
-   "published": "2026-11-05T22:45:00Z",
-   "teams": []
-  },
-  {
-   "title": "Sunderland latest: Le Bris - I prioritised Chelsea game over this one",
-   "link": "https://www.skysports.com/football/live-blog/11095/13375102/sunderland-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
-   "source": "Sky Sports",
-   "published": "2026-11-05T22:35:00Z",
-   "teams": [
-    "CHE",
-    "SUN"
-   ]
-  },
-  {
-   "title": "Brighton latest: 'Lazy but deserved,' says Hurzeler on Getafe win",
-   "link": "https://www.skysports.com/football/live-blog/11095/13279295/brighton-transfers-latest-news-rumours-and-gossip-live-updates-goals-and-highlights",
-   "source": "Sky Sports",
-   "published": "2026-11-05T22:31:00Z",
-   "teams": []
-  },
-  {
-   "title": "Is Estevao ready to explode?",
-   "link": "https://www.skysports.com/football/news/11095/13608399/estevao-ready-for-move-chelsea-minutes-under-xabi-alonso-after-reminder-of-his-threat-against-man-utd-the-radar",
-   "source": "Sky Sports",
-   "published": "2026-11-05T13:42:00Z",
-   "teams": []
-  },
-  {
-   "title": "Ronaldo's Portugal statement in full",
-   "link": "https://www.skysports.com/football/live-blog/11095/12507208/football-latest-news-gossip",
-   "source": "Sky Sports",
-   "published": "2026-11-05T11:00:00Z",
+   "title": "Fifa wants talks over restricting women’s Olympic football to under-23s",
+   "link": "https://www.theguardian.com/football/2026/nov/05/fifa-wants-womens-olympic-football-under-23s",
+   "source": "The Guardian",
+   "published": "2026-11-05T21:08:01Z",
    "teams": []
   },
   {
@@ -208,6 +178,20 @@
    "teams": [
     "TOT"
    ]
+  },
+  {
+   "title": "Transfer window verdict: how every Premier League club fared",
+   "link": "https://www.theguardian.com/football/2026/sep/02/premier-league-transfer-window-club-analysis-summer-2026",
+   "source": "The Guardian",
+   "published": "2026-09-02T08:30:27Z",
+   "teams": []
+  },
+  {
+   "title": "Men’s transfer window summer 2026: all deals from Europe’s top five leagues",
+   "link": "https://www.theguardian.com/football/ng-interactive/2026/sep/01/mens-transfer-window-summer-2026-all-deals-from-europes-top-five-leagues",
+   "source": "The Guardian",
+   "published": "2026-09-01T12:12:32Z",
+   "teams": []
   }
  ]
 }
