@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.1.0';
+  const APP_VERSION = '2.2.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -789,25 +789,58 @@
       return `<svg width="100%" height="190" viewBox="0 0 300 190" role="img" aria-label="Side view: laces strike the middle of the ball, then follow through toward the target"><line x1="10" y1="160" x2="290" y2="160" stroke="#E8F5EC" stroke-opacity=".5" stroke-width="2"/><circle cx="130" cy="130" r="30" fill="#fff"/><circle cx="102" cy="130" r="7" fill="#FF7A4D"/><text x="40" y="100" fill="#FF7A4D" font-size="12" font-weight="700" font-family="Inter">hit here</text><path d="M165 128 Q220 112 285 96" stroke="#E8F5EC" stroke-width="3" stroke-dasharray="6 6" fill="none"/><path d="M60 150 Q120 170 170 120 Q200 86 220 60" stroke="${fc}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M210 58 l11 1 -3 11" stroke="${fc}" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="196" y="44" fill="${fc}" font-size="12" font-weight="700" font-family="Inter">follow through</text></svg>`; }
     return `<div style="display:flex;flex-direction:column;gap:8px;width:88%"><div style="padding:10px 12px;border-radius:10px;background:rgba(11,18,16,.6)"><b>Ball flies over?</b> Lean forward, knee over the ball.</div><div style="padding:10px 12px;border-radius:10px;background:rgba(11,18,16,.6)"><b>Shot is weak?</b> Lock your ankle, hit through.</div><div style="padding:10px 12px;border-radius:10px;background:rgba(11,18,16,.6)"><b>Goes wide?</b> Point your standing foot at the target.</div></div>`;
   }
+  // Animated demo of the full laces shot: run-up leg swings back, strikes, follows through; ball flies into the net.
+  function lacesAnim() {
+    return `<svg class="anim" width="100%" height="190" viewBox="0 0 300 190" role="img" aria-label="Animation: the kicking leg swings back, strikes the middle of the ball with the laces, and follows through as the ball flies into the goal">
+      <line x1="10" y1="160" x2="290" y2="160" stroke="#E8F5EC" stroke-opacity=".5" stroke-width="2"/>
+      <path d="M252 160 V92 H292" fill="none" stroke="#E8F5EC" stroke-width="3"/><path d="M256 96 L288 96 M256 110 L288 110 M256 124 L288 124 M256 138 L288 138 M256 152 L288 152" stroke="#E8F5EC" stroke-opacity=".25"/>
+      <g class="k-body"><circle cx="106" cy="46" r="9" fill="#E8F5EC"/><line x1="104" y1="57" x2="100" y2="105" stroke="#E8F5EC" stroke-width="7" stroke-linecap="round"/>
+        <line x1="103" y1="68" x2="80" y2="88" stroke="#E8F5EC" stroke-width="5" stroke-linecap="round"/><line x1="103" y1="68" x2="126" y2="80" stroke="#E8F5EC" stroke-width="5" stroke-linecap="round"/>
+        <path d="M100 105 L98 132 L96 160 L84 160" fill="none" stroke="#E8F5EC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g class="k-leg"><path d="M100 105 L101 132 L100 158 L113 162" fill="none" stroke="#B6F23A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g class="k-ball"><circle cx="124" cy="152" r="8" fill="#fff"/><path d="M120 149 l4 -2 l4 2 l-1 4 h-6z" fill="#173F26"/></g>
+      <text class="k-cap" x="150" y="182" text-anchor="middle" fill="#B6F23A" font-size="11" font-weight="700">Swing back · Strike the middle · Follow through</text>
+    </svg>`;
+  }
+  const SKILL_ANIM = { laces: lacesAnim };
+  // Target reps for a drill: "10 reps", "Shoot 20 times", "15 free kicks"… falls back to 10.
+  function drillTarget(text) {
+    const m = String(text).match(/(\d+)\s+(?:reps?|shots?|times|volleys|free kicks?|run-ups|tosses|touches|passes|kicks|juggles|turns|crosses|headers|attempts)\b/i);
+    return m ? Math.min(Number(m[1]), 200) : 10;
+  }
   screens.skill = function (id) {
     const all = DataSource.skills(); const sk = all.find((s) => s.id === id);
     if (!sk) return { html: `<div class="screen"><header class="topbar">${backBtn('#skills')}<span class="title">Skill</span><span class="spacer44"></span></header><main class="scroll"><p class="muted">Skill not found.</p></main></div>` };
     const prog = getProg(); let i = Math.min(prog.steps[id] || 0, sk.steps.length - 1);
     if (prog.last !== id) { prog.last = id; saveProg(prog); }
     const step = sk.steps[i]; const last = i === sk.steps.length - 1;
+    const skillUi = screens.skill.ui || (screens.skill.ui = {}); if (skillUi.id !== id) { screens.skill.ui = { id }; return screens.skill(id); }
+    const anim = !!SKILL_ANIM[id]; const rk = id + '_' + i; const reps = (prog.reps || {})[rk] || 0; const target = drillTarget(step[3]);
     return {
       html: `<div class="screen">
         <header class="topbar">${backBtn('#skills', 'Back to skills')}<div style="flex:1"><div class="tiny muted">${esc(sk.cat)} · ${esc(sk.level)}</div><b class="display" style="font-size:1.15em">${esc(sk.name)}</b></div></header>
         <div style="padding:6px 20px 0"><div class="stepbars" style="grid-template-columns:repeat(${sk.steps.length},1fr)">${sk.steps.map((s, k) => `<button type="button" data-step="${k}" class="${k <= i ? 'done' : ''}" aria-label="Go to step ${k + 1}" ${k === i ? 'aria-current="step"' : ''}><span></span></button>`).join('')}</div></div>
         <main class="scroll">
-          <div class="figure"><span class="tag">Step ${i + 1} of ${sk.steps.length}</span>${sk.figs ? lacesFig(i) : `<span class="bignum" aria-hidden="true">${i + 1}</span>`}</div>
-          <div><h2 style="margin:0 0 8px;font-size:1.4em">${esc(step[0])}</h2><p style="margin:0;line-height:1.55">${esc(step[1])}</p></div>
+          <div class="figure"><span class="tag">Step ${i + 1} of ${sk.steps.length}</span>${anim && skillUi.watch ? SKILL_ANIM[id]() : sk.figs ? lacesFig(i) : `<span class="bignum" aria-hidden="true">${i + 1}</span>`}${anim ? `<button type="button" class="watchbtn" id="watch" aria-pressed="${!!skillUi.watch}">${skillUi.watch ? 'Show this step' : '▶ Watch the full move'}</button>` : ''}</div>
+          <div class="${skillUi.dir ? 'slide-' + skillUi.dir : ''}"><h2 style="margin:0 0 8px;font-size:1.4em">${esc(step[0])}</h2><p style="margin:0;line-height:1.55">${esc(step[1])}</p></div>
           <div class="card tip"><span class="ic" style="color:var(--accent)">${icon('bulb', 18)}</span><div><b style="color:var(--accent)">COACH TIP</b><p>${esc(step[2])}</p></div></div>
-          <div class="card tip"><span class="ic" style="color:var(--c-cal)">${icon('target', 18)}</span><div><b style="color:var(--c-cal)">PRACTICE DRILL</b><p>${esc(step[3])}</p></div></div>
+          <div class="card tip"><span class="ic" style="color:var(--c-cal)">${icon('target', 18)}</span><div><b style="color:var(--c-cal)">PRACTICE DRILL</b><p>${esc(step[3])}</p>
+            <div class="reps"><button type="button" class="iconbtn" id="repMinus" aria-label="Remove one rep">−</button><div class="grow"><div class="row between small"><b>${reps} / ${target} reps</b>${reps ? '<button type="button" class="linkbtn tiny" id="repReset">Reset</button>' : ''}</div><div class="repbar"><span style="width:${Math.min(100, reps / target * 100)}%"></span></div></div><button type="button" class="btn" id="repPlus" style="height:40px;width:64px" aria-label="Add one rep">+1</button></div></div></div>
+          ${last ? `<div class="card" style="padding:14px"><b>Quick recap</b><ol class="recap">${sk.steps.map((s) => `<li>${esc(s[0])}</li>`).join('')}</ol></div>` : ''}
         </main>
         <div class="stepnav"><button type="button" class="btn ghost" id="prev" style="flex:1" ${i === 0 ? 'disabled' : ''}>Back</button><button type="button" class="btn" id="next" style="flex:2">${last ? (prog.done[id] ? 'Start again' : 'Mark as learned') : 'Next step'}</button></div></div>`,
       mount() {
-        const go = (k) => { const p = getProg(); p.steps[id] = k; saveProg(p); render(); window.scrollTo(0, 0); };
+        const go = (k) => { if (k < 0 || k >= sk.steps.length || k === i) return; skillUi.dir = k > i ? 'next' : 'prev'; skillUi.watch = false; const p = getProg(); p.steps[id] = k; saveProg(p); render(); window.scrollTo(0, 0); skillUi.dir = ''; };
+        const setReps = (n) => { const p = getProg(); p.reps = p.reps || {}; p.reps[rk] = Math.max(0, n); saveProg(p); render(); if (n === target) toast('Drill done! ' + target + ' reps'); };
+        on('#repPlus', 'click', () => setReps(reps + 1));
+        on('#repMinus', 'click', () => setReps(reps - 1));
+        on('#repReset', 'click', () => setReps(0));
+        on('#watch', 'click', () => { skillUi.watch = !skillUi.watch; render(); });
+        const sc = qs('main.scroll'); let sx = null, sy = null;
+        if (sc) {
+          sc.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+          sc.addEventListener('touchend', (e) => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null; if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? i + 1 : i - 1); }, { passive: true });
+        }
         on('[data-step]', 'click', (e, el) => go(Number(el.dataset.step)));
         on('#prev', 'click', () => { if (i > 0) go(i - 1); });
         on('#next', 'click', () => {
@@ -823,7 +856,7 @@
   /* ----- Profile ----- */
   screens.profile = function () {
     const st = screens.profile.st || (screens.profile.st = { p: null });
-    if (!st.p) st.p = getProfile();
+    if (!st.p || render.last !== 'profile') st.p = getProfile();
     const p = st.p; const s = sess.get() || {};
     const colors = ['#B6F23A', '#5AA9FF', '#FFB547', '#C9A7FF', '#FF8FB1', '#5EE0C1'];
     return {

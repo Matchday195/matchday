@@ -238,3 +238,22 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 .standings th, .standings td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .standings th { color: var(--muted); font-weight: 600; font-size: .9em; }
 .standings tr:last-child td { border-bottom: 0; }
+
+/* Skills: watch button, rep counter, recap, step slide, animation */
+.watchbtn { position: absolute; top: 10px; right: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid #B6F23A; background: rgba(11,18,16,.75); color: #B6F23A; font: inherit; font-size: .8em; font-weight: 700; cursor: pointer; }
+.reps { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.reps .iconbtn { font-size: 1.3em; font-weight: 700; }
+.repbar { height: 6px; border-radius: 999px; background: var(--border); margin-top: 6px; overflow: hidden; }
+.repbar span { display: block; height: 100%; background: var(--c-cal); transition: width .25s ease; }
+.linkbtn { border: 0; background: none; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 0; font: inherit; }
+.recap { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; line-height: 1.4; }
+.slide-next { animation: slideNext .28s ease-out; } .slide-prev { animation: slidePrev .28s ease-out; }
+@keyframes slideNext { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes slidePrev { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+.anim .k-leg { transform-box: view-box; transform-origin: 100px 105px; animation: kLeg 2.6s ease-in-out infinite; }
+.anim .k-body { transform-box: view-box; transform-origin: 98px 160px; animation: kBody 2.6s ease-in-out infinite; }
+.anim .k-ball { animation: kBall 2.6s linear infinite; }
+@keyframes kLeg { 0%, 20% { transform: rotate(0deg); } 42% { transform: rotate(58deg); } 54% { transform: rotate(-22deg); } 70%, 88% { transform: rotate(-72deg); } 100% { transform: rotate(0deg); } }
+@keyframes kBody { 0%, 42% { transform: rotate(0deg); } 54%, 88% { transform: rotate(6deg); } 100% { transform: rotate(0deg); } }
+@keyframes kBall { 0%, 54% { transform: translate(0, 0); opacity: 1; } 78% { transform: translate(140px, -30px); opacity: 1; } 88% { transform: translate(148px, -18px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .anim .k-leg, .anim .k-body, .anim .k-ball, .slide-next, .slide-prev { animation: none; } .anim .k-leg { transform: rotate(-22deg); } }
