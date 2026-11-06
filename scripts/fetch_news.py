@@ -20,7 +20,7 @@ FEEDS = [
     ("The Guardian", "https://www.theguardian.com/football/rss", False),  # all football; filtered to transfer stories
 ]
 TRANSFER_WORDS = re.compile(
-    r"transfer|\bsign(s|ed|ing)?\b|\bdeal\b|\bloan|\bbids?\b|\bjoin(s|ed)?\b|\btarget|swoop|\btalks\b|\bfee\b|contract|rumou?r|gossip|\bwindow\b|\bagree",
+    r"transfer|\bsign(s|ed|ing)?\b|\bdeal\b|\bloan|\bbids?\b|\bjoin(s|ed)?\b|\btarget|swoop|\bfee\b|contract|rumou?r|gossip|\bwindow\b|\bagree",
     re.I,
 )
 MAX_ITEMS = 60
