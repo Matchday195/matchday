@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-06T15:50:28Z",
+ "updated": "2026-11-06T16:41:18Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -11,14 +11,18 @@
    "link": "https://www.skysports.com/football/live-blog/11095/13025491/aston-villa-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
    "source": "Sky Sports",
    "published": "2026-11-06T14:25:00Z",
-   "teams": []
+   "teams": [
+    "AVL"
+   ]
   },
   {
    "title": "Jobe joins brother Jude with England to showcase his own talent",
    "link": "https://www.skysports.com/football/news/11095/13608890/england-jobe-bellingham-has-the-chance-to-showcase-his-own-talent-alongside-brother-jude-in-thomas-tuchels-squad",
    "source": "Sky Sports",
    "published": "2026-11-06T14:24:00Z",
-   "teams": []
+   "teams": [
+    "N-ENG"
+   ]
   },
   {
    "title": "NWSL playoff predictions: who can spoil Gotham’s bid for the double?",
@@ -32,7 +36,9 @@
    "link": "https://www.skysports.com/football/news/11095/13605773/david-moyes-interview-everton-manager-targeting-trophies-as-he-equals-harry-cattericks-record-for-games-managed",
    "source": "Sky Sports",
    "published": "2026-11-06T11:00:00Z",
-   "teams": []
+   "teams": [
+    "EVE"
+   ]
   },
   {
    "title": "Ten of the best-value deals from this summer’s transfer window",
@@ -105,7 +111,8 @@
    "source": "The Guardian",
    "published": "2026-09-03T17:26:25Z",
    "teams": [
-    "ARS"
+    "ARS",
+    "HIL"
    ]
   },
   {
@@ -180,7 +187,10 @@
    "link": "https://www.theguardian.com/football/2026/sep/02/folarin-balogun-transfer-deadline-day-collapse-monaco-everton-lamine-camara-chelsea",
    "source": "The Guardian",
    "published": "2026-09-02T17:46:40Z",
-   "teams": []
+   "teams": [
+    "EVE",
+    "ASM"
+   ]
   },
   {
    "title": "Richarlison could still leave Tottenham as Trabzonspor weigh up bid for striker",
