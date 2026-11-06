@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '1.0.3';
+  const APP_VERSION = '1.1.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -141,12 +141,37 @@
     }
     return {
       fixtures, team: (c) => D.TEAMS[c] || { name: c, color: '#777' },
-      detail: (id) => D.MATCH_DETAIL[id] || null, transfers: () => D.TRANSFERS, skills: () => D.SKILLS, leagues: () => D.LEAGUES,
+      detail: (id) => D.MATCH_DETAIL[id] || null, skills: () => D.SKILLS, leagues: () => D.LEAGUES,
       lastUpdated: () => lastUpdated,
       refresh() { return new Promise((res) => setTimeout(() => { lastUpdated = new Date(); store.set('lastUpdated', lastUpdated.getTime()); res(); }, 700)); }
     };
   })();
   const T = DataSource.team;
+
+  /* ---------- real transfer headlines (news.json is updated by GitHub every 30 minutes) ---------- */
+  const News = (function () {
+    const URLS = ['https://raw.githubusercontent.com/Matchday195/matchday/main/news.json', 'news.json'];
+    let data = store.get('news', null); let state = data ? 'ok' : 'loading';
+    async function load() {
+      for (const u of URLS) {
+        try {
+          const r = await fetch(u + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+          if (!r.ok) continue;
+          const j = await r.json();
+          if (j && Array.isArray(j.items)) { data = j; state = 'ok'; store.set('news', j); return true; }
+        } catch (e) { /* try the next address */ }
+      }
+      state = data ? 'ok' : (navigator.onLine ? 'empty' : 'offline');
+      return false;
+    }
+    return { load, items: () => (data && data.items) || [], updated: () => data && data.updated, sources: () => (data && data.sources) || [], state: () => state };
+  })();
+  function timeAgo(iso) {
+    const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    if (m < 1) return 'just now'; if (m < 60) return m + ' min ago';
+    const h = Math.round(m / 60); if (h < 24) return h + 'h ago';
+    const d = Math.round(h / 24); return d + (d === 1 ? ' day ago' : ' days ago');
+  }
   const crest = (code, size) => { const t = T(code); return `<span class="crest" style="width:${size}px;height:${size}px;background:${t.color};font-size:${Math.round(size / 3.3)}px">${esc(code)}</span>`; };
   const matchTitle = (f) => T(f.home).name + ' vs ' + T(f.away).name;
   function statusText(f) { return f.status === 'live' ? (f.ht ? 'HT' : f.minute + "'") : f.status === 'ft' ? 'FT' : fmtTime(f.time); }
@@ -157,7 +182,7 @@
   async function refreshAll(btn) {
     if (btn) { const s = btn.querySelector('svg'); s.classList.remove('spin'); void s.offsetWidth; s.classList.add('spin'); }
     if (!navigator.onLine) { toast('You’re offline — showing saved data'); return false; }
-    await DataSource.refresh();
+    await Promise.all([DataSource.refresh(), News.load()]);
     let updating = false;
     if (swReg) {
       try { await swReg.update(); if (swReg.waiting) { updating = true; swReg.waiting.postMessage('skipWaiting'); } } catch (e) { }
@@ -193,7 +218,7 @@
     const items = [['matches', 'Matches', 'ball'], ['home', 'Home', 'home'], ['skills', 'Skills', 'book']];
     return `<nav class="nav" aria-label="Main">${items.map(([r, l, i]) => `<a href="#${r}" ${active === r ? 'aria-current="page"' : ''}>${icon(i, 22)}${l}</a>`).join('')}</nav>`;
   }
-  const demoBanner = () => `<div class="demo" role="note"><b>DEMO DATA</b><span>These games, scores and transfers are made up for testing. They are not real yet.</span></div>`;
+  const demoBanner = () => `<div class="demo" role="note"><b>DEMO DATA</b><span>These games and scores are made up for testing. They are not real yet.</span></div>`;
   const backBtn = (href, label) => `<a class="iconbtn" href="${href}" aria-label="${label || 'Back'}">${icon('back')}</a>`;
   const offlineBanner = () => navigator.onLine ? '' : `<div class="offline-banner">Offline · showing saved data from ${fmtClock(DataSource.lastUpdated())}</div>`;
   function switchBtn(id, onState, label) { return `<button type="button" class="switch" data-sw="${id}" aria-pressed="${!!onState}" aria-label="${esc(label)}"></button>`; }
@@ -260,7 +285,7 @@
     const nextDay = mine[0] ? parseYmd(mine[0].date) : null;
     const prog = getProg(); const sk = DataSource.skills().find((x) => x.id === prog.last) || DataSource.skills()[0];
     const stepNow = (prog.steps[sk.id] || 0);
-    const tr = DataSource.transfers();
+    const tr = News.items();
     const a = getAlerts(); const alertCount = Object.values(a.matches).filter(Boolean).length;
     const lines = (arr) => arr.map((l) => `<div class="ln"><b>${esc(l[0])}</b><span>${esc(l[1])}</span></div>`).join('');
     const cubes = [
@@ -268,12 +293,12 @@
         l: live.slice(0, 2).map((f) => [T(f.home).name + ' ' + f.hs + '–' + f.as + ' ' + T(f.away).name, liveLabel(f) + ' · ' + f.league]) },
       { id: 'cal', t: 'My Calendar', s: nextDay ? 'Next: ' + DOW[nextDay.getDay()] + ', ' + MONTHS[nextDay.getMonth()].slice(0, 3) + ' ' + nextDay.getDate() : 'No games soon', c: 'var(--c-cal)', href: '#calendar', ic: 'cal',
         l: mine.slice(0, 2).map((f) => [matchTitle(f), DOW[parseYmd(f.date).getDay()] + ' · ' + fmtTime(f.time)]) },
-      { id: 'tr', t: 'Transfer News', s: 'DEMO · ' + tr.length + ' stories', c: 'var(--c-tr)', href: '#transfers', ic: 'swap',
-        l: tr.slice(0, 2).map((x) => [x.name + ' → ' + x.to, x.type + ' · from ' + x.from]) },
+      { id: 'tr', t: 'Transfer News', s: tr.length ? 'Latest: ' + timeAgo(tr[0].published) : (News.state() === 'loading' ? 'Loading…' : 'Real headlines'), c: 'var(--c-tr)', href: '#transfers', ic: 'swap',
+        l: tr.slice(0, 1).map((x) => [x.title, x.source + ' · ' + timeAgo(x.published)]) },
       { id: 'sk', t: 'Skills', s: sk.name.split(' (')[0] + ' · ' + (stepNow + 1) + '/' + sk.steps.length, c: 'var(--c-sk)', href: '#skill/' + sk.id, ic: 'book',
-        l: [['Continue: ' + sk.name.split(' (')[0], 'Step ' + (stepNow + 1) + ' · ' + sk.steps[stepNow][0]], [DataSource.skills().length + ' skills saved offline', 'Shooting, dribbling, passing']] },
+        l: [['Continue: ' + sk.name.split(' (')[0], 'Step ' + (stepNow + 1) + ' of ' + sk.steps.length]] },
       { id: 'al', t: 'Alerts', s: alertCount ? alertCount + ' matches on' : 'Set up alerts', c: 'var(--c-al)', href: '#alerts', ic: 'bell',
-        l: [['Notifications: ' + ({ granted: 'on', denied: 'blocked', default: 'not set up', unsupported: 'not supported' })[notifyState()], 'Tap Open to change'], ['Goals, kickoff, full time', 'You pick what you get']] },
+        l: [['Notifications ' + ({ granted: 'on', denied: 'blocked', default: 'off', unsupported: 'not supported' })[notifyState()], 'Goals, kickoff, full time']] },
       { id: 'pr', t: 'My Profile', s: p.name + (p.teams[0] ? ' · ' + T(p.teams[0]).name + ' fan' : ''), c: 'var(--c-pr)', href: '#profile', ic: 'user',
         l: [[p.teams.length + ' favorite teams', p.teams.map((c) => T(c).name).join(' · ') || 'Add some'], ['Plays ' + ({ GK: 'goalkeeper', DEF: 'defence', MID: 'midfield', FWD: 'forward' })[p.pos], 'Theme: ' + settings.theme]] }
     ];
@@ -293,7 +318,7 @@
                 <span class="ic">${icon(c.ic, 24, 2.2)}</span><span><span class="t">${esc(c.t)}</span><span class="s">${esc(c.s)}</span></span></button>
               <div class="face back" ${st.open[c.id] ? '' : 'aria-hidden="true"'}>
                 <div class="hd"><span>${esc(c.t)}</span><button type="button" class="x" data-flip="${c.id}" aria-label="Flip back" ${st.open[c.id] ? '' : 'tabindex="-1"'}>${icon('x', 14, 2.5)}</button></div>
-                ${lines(c.l.length ? c.l : [['Nothing yet', '']])}
+                ${lines(c.l.length ? c.l : [[c.id === 'live' ? 'No live games right now' : 'Nothing yet', '']])}
                 <a class="open" href="${c.href}" ${st.open[c.id] ? '' : 'tabindex="-1"'}>Open</a></div>
             </div></div>`).join('')}</div>
           <p class="note">Tap a cube to peek · tap Open to go in</p>
@@ -507,32 +532,41 @@
 
   /* ----- Transfers ----- */
   screens.transfers = function () {
-    const st = screens.transfers.st || (screens.transfers.st = { scope: 'all', type: 'All' });
+    const st = screens.transfers.st || (screens.transfers.st = { scope: 'all' });
     const p = getProfile();
     const now = new Date(); let banner = '';
     const jan = new Date(now.getFullYear() + (now.getMonth() >= 1 ? 1 : 0), 0, 1);
     const inJan = (now.getMonth() === 0) || (now.getMonth() === 1 && now.getDate() <= 2);
     if (inJan) banner = 'The January window is <b>open</b>';
     else if (now.getMonth() >= 8) banner = `January window opens in <b>${Math.ceil((jan - now) / 86400000)} days</b>`;
-    const B = { 'Done deal': 'var(--c-live)', Rumour: 'var(--c-tr)', Loan: 'var(--c-cal)' };
-    const items = DataSource.transfers().filter((x) => (st.scope === 'all' || x.teams.some((c) => p.teams.includes(c))) && (st.type === 'All' || x.type === st.type));
+    const all = News.items();
+    const items = st.scope === 'all' ? all : all.filter((x) => (x.teams || []).some((c) => p.teams.includes(c)));
+    const state = News.state();
+    let empty = '';
+    if (!items.length) {
+      if (state === 'loading') empty = 'Loading the latest headlines…';
+      else if (state === 'offline') empty = 'You’re offline. Headlines will load when you’re back online.';
+      else if (st.scope === 'mine') empty = 'No headlines about your favorite teams right now.';
+      else empty = 'No headlines yet. They update every 30 minutes.';
+    }
+    const srcs = News.sources();
     return {
       html: `<div class="screen">
-        <header class="topbar">${backBtn('#home', 'Back to home')}<span class="title">Transfer news</span><span class="spacer44"></span></header>
-        <main class="scroll">${demoBanner()}
+        <header class="topbar">${backBtn('#home', 'Back to home')}<span class="title">Transfer news</span><button type="button" class="iconbtn" id="newsRefresh" aria-label="Refresh headlines">${icon('refresh')}</button></header>
+        <main class="scroll">
           ${banner ? `<div class="window">${icon('clock', 20)}<span>${banner}</span></div>` : ''}
           <div class="seg"><button type="button" data-scope="all" aria-pressed="${st.scope === 'all'}">All teams</button><button type="button" data-scope="mine" aria-pressed="${st.scope === 'mine'}">My teams</button></div>
-          <div class="chips">${[['All', 'All'], ['Done deal', 'Done deals'], ['Rumour', 'Rumours'], ['Loan', 'Loans']].map(([k, l]) => `<button type="button" class="chip" data-type="${k}" aria-pressed="${st.type === k}">${l}</button>`).join('')}</div>
           ${items.length ? items.map((x) => `<article class="card tcard">
-            <div class="row"><span class="avatar" style="background:var(--surface2);color:var(--text)">${esc(initials(x.name))}</span><div style="flex:1"><b>${esc(x.name)}</b><div class="small muted">${esc(x.pos)} · ${esc(x.ago)}</div></div><span class="badge" style="background:${B[x.type]}">${esc(x.type)}</span></div>
-            <div class="row"><div class="row" style="flex:1;min-width:0;gap:8px"><span class="dot" style="background:${x.fc};width:22px;height:22px"></span><b class="small">${esc(x.from)}</b></div><span class="muted">${icon('arrow')}</span><div class="row" style="flex:1;min-width:0;justify-content:flex-end;gap:8px"><b class="small">${esc(x.to)}</b><span class="dot" style="background:${x.tc};width:22px;height:22px"></span></div></div>
-            <div class="row between small" style="padding-top:10px;border-top:1px solid var(--line)"><span>${esc(x.fee)}</span><span class="muted">${esc(x.source)}</span></div></article>`).join('')
-            : `<div class="card muted" style="padding:18px;text-align:center">Nothing here yet.</div>`}
-          <p class="note">Sample stories · real news arrives with the live feed</p>
+            <div class="row between tiny muted"><b style="color:var(--text)">${esc(x.source)}</b><span>${esc(timeAgo(x.published))}</span></div>
+            <b style="font-size:1.02em;line-height:1.35">${esc(x.title)}</b>
+            ${(x.teams || []).length ? `<div class="row" style="gap:6px;flex-wrap:wrap">${x.teams.map((c) => `<span class="row tiny" style="gap:6px;padding:3px 10px 3px 3px;border-radius:999px;background:var(--surface2);font-weight:600">${crest(c, 20)}${esc(T(c).name)}</span>`).join('')}</div>` : ''}
+            <a href="${esc(x.link)}" target="_blank" rel="noopener" class="row small" style="gap:6px;font-weight:700;padding-top:10px;border-top:1px solid var(--line)">Read on ${esc(x.source)}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+          </article>`).join('') : `<div class="card muted" style="padding:18px;text-align:center">${empty}</div>`}
+          <p class="note">Real headlines${srcs.length ? ' from ' + srcs.map(esc).join(' and ') : ''}${News.updated() ? ' · updated ' + timeAgo(News.updated()) : ''}. Tap a story to read it on their site.</p>
         </main>${nav('')}</div>`,
       mount() {
         on('[data-scope]', 'click', (e, el) => { st.scope = el.dataset.scope; render(); });
-        on('[data-type]', 'click', (e, el) => { st.type = el.dataset.type; render(); });
+        on('#newsRefresh', 'click', async (e, el) => { const sv = el.querySelector('svg'); sv.classList.remove('spin'); void sv.offsetWidth; sv.classList.add('spin'); const ok = await News.load(); toast(ok ? 'Headlines up to date' : 'Couldn’t reach the news — showing saved headlines'); render(); });
       }
     };
   };
@@ -742,6 +776,7 @@
     let reloaded = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
   }
+  News.load().then(() => { if (/^#(home|transfers)?$/.test(location.hash)) render(); });
   if (sess.get()) { render(); showLoading(() => {}); }
   else render();
   checkReminders();

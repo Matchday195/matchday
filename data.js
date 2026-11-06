@@ -91,14 +91,6 @@ window.MD_DATA = (function () {
     }
   };
 
-  const TRANSFERS = [
-    { name: 'Kofi Asante', pos: 'Midfielder', ago: '2h ago', type: 'Done deal', from: 'Ajax', fc: '#D2122E', to: 'Brighton', tc: '#0057B8', fee: 'Fee: €28m', source: 'Official', teams: [] },
-    { name: 'Leo Marín', pos: 'Winger', ago: '4h ago', type: 'Rumour', from: 'Real Betis', fc: '#0BB363', to: 'Arsenal', tc: '#DB0007', fee: 'Talks started', source: 'Reliable source', teams: ['ARS'] },
-    { name: 'Jonas Weber', pos: 'Centre-back', ago: '6h ago', type: 'Done deal', from: 'Wolfsburg', fc: '#65B32E', to: 'Bayern Munich', tc: '#DC052D', fee: 'Fee: €35m', source: 'Official', teams: ['BAY'] },
-    { name: 'Mateo Rossi', pos: 'Striker', ago: '1d ago', type: 'Loan', from: 'Juventus', fc: '#BBBBBB', to: 'Inter Miami', tc: '#F7B5CD', fee: 'Season-long loan', source: 'Official', teams: ['MIA', 'JUV'] },
-    { name: 'Tomás Ferreira', pos: 'Goalkeeper', ago: '1d ago', type: 'Rumour', from: 'Benfica', fc: '#E83030', to: 'Barcelona', tc: '#A50044', fee: 'Early interest', source: 'Unconfirmed', teams: ['BAR'] },
-    { name: 'Noah Clarke', pos: 'Right-back', ago: '2d ago', type: 'Done deal', from: 'Leeds', fc: '#FFCD00', to: 'Napoli', tc: '#12A0D7', fee: 'Fee: €12m', source: 'Official', teams: [] }
-  ];
 
   // Skills tutorials: each step = title, body, tip, drill.
   const SKILLS = [
@@ -224,5 +216,5 @@ window.MD_DATA = (function () {
     f1: [[4, 'H'], [29, 'H'], [51, 'A'], [63, 'H'], [80, 'H']]
   };
 
-  return { TEAMS, LEAGUES, FIXTURES, MATCH_DETAIL, TRANSFERS, SKILLS, GOALS };
+  return { TEAMS, LEAGUES, FIXTURES, MATCH_DETAIL, SKILLS, GOALS };
 })();
