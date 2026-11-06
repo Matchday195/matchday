@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.4.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -339,6 +339,7 @@
         ${offlineBanner()}
         <main class="scroll">${demoBanner()}
           <div><h1 class="page">Hey, ${esc(p.name)}</h1><span class="muted small">Updated ${fmtClock(upd)}</span></div>
+          <a class="search" href="#search" style="color:var(--muted)" aria-label="Search teams and tournaments">${icon('search', 18)}<span>Search teams and tournaments</span></a>
           <div class="cubes">${cubes.map((c) => `<div class="cube ${st.open[c.id] ? 'open' : ''}" style="--c:${c.c}">
             <div class="cube-inner">
               <button type="button" class="face front" data-flip="${c.id}" aria-label="Peek at ${esc(c.t)}" ${st.open[c.id] ? 'tabindex="-1"' : ''}>
@@ -595,6 +596,106 @@
         on('[data-scope]', 'click', (e, el) => { st.scope = el.dataset.scope; render(); });
         on('#newsRefresh', 'click', async (e, el) => { const sv = el.querySelector('svg'); sv.classList.remove('spin'); void sv.offsetWidth; sv.classList.add('spin'); const ok = await News.load(); toast(ok ? 'Headlines up to date' : 'Couldn’t reach the news — showing saved headlines'); render(); });
       }
+    };
+  };
+
+  /* ----- Search: teams and tournaments ----- */
+  const fold = (t) => String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const groupFor = (name) => D.TEAM_GROUPS[name] ? name : null;
+  const tournamentById = (id) => D.TOURNAMENTS.find((t) => t.id === id);
+  const tournamentForTeam = (t) => D.TOURNAMENTS.find((x) => x.name === t.league || x.name === t.group);
+  const backHere = () => `<button type="button" class="iconbtn" id="goBack" aria-label="Back">${icon('back')}</button>`;
+  function bindBack() { on('#goBack', 'click', () => { if (history.length > 1) history.back(); else location.hash = '#home'; }); }
+  const tIcon = (t) => `<span class="crest" style="width:36px;height:36px;border-radius:10px;background:var(--surface2);color:var(--accent);text-shadow:none">${icon(t.national ? 'user' : 'cal', 18)}</span>`;
+
+  screens.search = function () {
+    const st = screens.search.st || (screens.search.st = { q: '' });
+    return {
+      html: `<div class="screen">
+        <header class="topbar">${backHere()}<label class="search" style="flex:1">${icon('search', 18)}<input id="gq" type="search" placeholder="Search teams and tournaments" aria-label="Search teams and tournaments" value="${esc(st.q)}" autocomplete="off"></label></header>
+        <main class="scroll" id="searchResults">${searchResults(st.q)}</main>${nav('')}</div>`,
+      mount() {
+        bindBack();
+        const inp = qs('#gq'); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+        const bind = () => qsa('#searchResults [data-world]').forEach((el) => el.addEventListener('click', () => rememberTeam(el.dataset.world, el.dataset.n, el.dataset.c)));
+        bind();
+        on('#gq', 'input', (e) => { st.q = e.target.value; qs('#searchResults').innerHTML = searchResults(st.q); bind(); });
+        World.load().then(() => { if (st.q && qs('#searchResults')) { qs('#searchResults').innerHTML = searchResults(st.q); bind(); } });
+      }
+    };
+  };
+  function searchResults(raw) {
+    const q = fold(raw.trim()); const p = getProfile();
+    const teamRow = (key, name, sub, extra, info) => `<a class="setrow" href="#team/${encodeURIComponent(key)}" ${extra || ''} style="color:var(--text)">${crest(key, 36, info)}<div class="grow"><span>${esc(name)}</span><span>${esc(sub)}</span></div>${icon('chev', 18)}</a>`;
+    const tRow = (t) => `<a class="setrow" href="#league/${t.id}" style="color:var(--text)">${tIcon(t)}<div class="grow"><span>${esc(t.name)}</span><span>${esc(t.type)} · ${esc(t.country)}</span></div>${icon('chev', 18)}</a>`;
+    const section = (title, rows) => rows.length ? `<section style="display:flex;flex-direction:column;gap:8px"><span class="label">${title}</span><div class="list">${rows.join('')}</div></section>` : '';
+    if (!q) {
+      return section('Your teams', p.teams.map((k) => teamRow(k, T(k).name, T(k).league))) + section('Tournaments', D.TOURNAMENTS.map(tRow));
+    }
+    const tours = D.TOURNAMENTS.filter((t) => fold(t.name + ' ' + (t.aliases || '') + ' ' + t.country).includes(q)).map(tRow);
+    const teams = [];
+    Object.keys(D.TEAM_GROUPS).forEach((g) => D.TEAM_GROUPS[g].forEach((t) => { if (fold(t[1] + ' ' + (t[3] || '') + ' ' + t[0].replace(/^N-/, '')).includes(q)) teams.push(teamRow(t[0], t[1], T(t[0]).league)); }));
+    const ex = extraTeams(); Object.keys(ex).forEach((k) => { if (k.startsWith('C-') && fold(ex[k].name).includes(q)) teams.push(teamRow(k, ex[k].name, ex[k].league)); });
+    const world = []; const w = World.list();
+    if (w && q.length >= 2) for (let i = 0; i < w.length && world.length < 40; i++) if (fold(w[i][0] + ' ' + w[i][1]).includes(q)) { const key = 'W-' + slug(w[i][0] + '-' + w[i][1]); world.push(teamRow(key, w[i][0], w[i][1], `data-world="${esc(key)}" data-n="${esc(w[i][0])}" data-c="${esc(w[i][1])}"`, teamInfoFor(w[i][0], w[i][1]))); }
+    const html = section('Tournaments', tours) + section('Teams', teams.slice(0, 60)) + section('More clubs worldwide', world) + (q.length >= 2 && !w ? '<p class="note">Loading more clubs…</p>' : '');
+    return html || `<div class="card muted" style="padding:18px;text-align:center">Nothing found for “${esc(raw.trim())}”. You can add any team as a favorite in your profile.</div>`;
+  }
+
+  /* ----- Team page ----- */
+  function fixtureRows(list) {
+    const a = getAlerts();
+    return list.map((f) => { const d = parseYmd(f.date); return `<div class="fx"><span class="d"><span class="tiny muted">${DOW[d.getDay()]}</span><b>${d.getDate()}</b></span><a href="#match/${f.id}" style="flex:1;color:var(--text)"><div style="font-weight:600">${esc(matchTitle(f))}</div><div class="small muted">${esc(f.league)} · ${f.status === 'upcoming' ? fmtTime(f.time) : f.status === 'live' ? liveLabel(f) : 'FT ' + f.hs + '–' + f.as}</div></a>${f.status === 'upcoming' ? `<button type="button" class="iconbtn bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for ${esc(matchTitle(f))}">${icon('bell', 18)}</button>` : ''}</div>`; }).join('');
+  }
+  function newsRows(items) {
+    return items.map((x) => `<a class="setrow" href="${esc(x.link)}" target="_blank" rel="noopener" style="color:var(--text);align-items:flex-start"><div class="grow"><span style="line-height:1.35">${esc(x.title)}</span><span>${esc(x.source)} · ${esc(timeAgo(x.published))}</span></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--accent)"><path d="M7 17L17 7M9 7h8v8"/></svg></a>`).join('');
+  }
+  screens.team = function (arg) {
+    const key = decodeURIComponent(arg || '');
+    const t = T(key); const p = getProfile(); const following = p.teams.includes(key);
+    const tour = tournamentForTeam(t);
+    const fx = DataSource.fixtures().filter((f) => f.home === key || f.away === key).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const news = News.items().filter((x) => (x.teams || []).includes(key)).slice(0, 8);
+    const sub = t.national ? 'National team' : key.startsWith('C-') ? 'My team' : (t.league || '');
+    return {
+      html: `<div class="screen">
+        <header class="topbar">${backHere()}<span class="title">${esc(t.name)}</span><span class="spacer44"></span></header>
+        <main class="scroll" style="gap:18px">
+          <div class="card" style="padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+            ${crest(key, 72)}<h1 class="page" style="font-size:1.5em">${esc(t.name)}</h1>
+            ${tour ? `<a href="#league/${tour.id}" class="small" style="font-weight:600">${esc(sub)} ›</a>` : `<span class="small muted">${esc(sub)}</span>`}
+            <button type="button" class="btn ${following ? 'ghost' : ''}" id="follow" style="height:46px;max-width:240px">${following ? '★ Following' : '☆ Follow'}</button>
+          </div>
+          <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Matches</span>
+            ${fx.length ? demoBanner() + `<div class="list">${fixtureRows(fx)}</div>` : `<div class="card small muted" style="padding:14px">No games to show yet. Real fixtures appear once the live data feed is connected.</div>`}</section>
+          <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Transfer headlines</span>
+            ${news.length ? `<div class="list">${newsRows(news)}</div>` : `<div class="card small muted" style="padding:14px">No recent transfer headlines about ${esc(t.name)}.</div>`}</section>
+        </main>${nav('')}</div>`,
+      mount() {
+        bindBack();
+        on('#follow', 'click', () => { const pr = getProfile(); if (pr.teams.includes(key)) pr.teams = pr.teams.filter((c) => c !== key); else pr.teams.push(key); saveProfile(pr); delete screens.profile.st; toast(pr.teams.includes(key) ? 'Following ' + t.name : 'Unfollowed ' + t.name); render(); });
+        on('[data-bell]', 'click', (e, el) => toggleMatchAlert(el.dataset.bell));
+      }
+    };
+  };
+
+  /* ----- Tournament page ----- */
+  screens.league = function (id) {
+    const t = tournamentById(id);
+    if (!t) return { html: `<div class="screen"><header class="topbar">${backHere()}<span class="title">Tournament</span><span class="spacer44"></span></header><main class="scroll"><p class="muted">Tournament not found.</p></main></div>`, mount: bindBack };
+    const g = groupFor(t.name); const teams = g ? D.TEAM_GROUPS[g] : (t.national ? D.TEAM_GROUPS['National teams'] : []);
+    const fx = DataSource.fixtures().filter((f) => f.league === t.name).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    return {
+      html: `<div class="screen">
+        <header class="topbar">${backHere()}<span class="title">${esc(t.name)}</span><span class="spacer44"></span></header>
+        <main class="scroll" style="gap:18px">
+          <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px">${tIcon(t)}<div><h1 class="page" style="font-size:1.4em">${esc(t.name)}</h1><span class="small muted">${esc(t.type)} · ${esc(t.country)}</span></div></div>
+          <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Matches</span>
+            ${fx.length ? demoBanner() + `<div class="list">${fixtureRows(fx)}</div>` : `<div class="card small muted" style="padding:14px">No games to show yet. Real fixtures appear once the live data feed is connected.</div>`}</section>
+          <section style="display:flex;flex-direction:column;gap:8px"><span class="label">${g ? 'Teams this season (' + teams.length + ')' : t.national ? 'National teams' : 'Teams'}</span>
+            ${teams.length ? `<div class="list">${teams.map((x) => `<a class="setrow" href="#team/${encodeURIComponent(x[0])}" style="color:var(--text)">${crest(x[0], 32)}<div class="grow"><span>${esc(x[1])}</span></div>${icon('chev', 18)}</a>`).join('')}</div>` : `<div class="card small muted" style="padding:14px">The team list for this tournament comes with the live data feed.</div>`}</section>
+        </main>${nav('')}</div>`,
+      mount() { bindBack(); on('[data-bell]', 'click', (e, el) => toggleMatchAlert(el.dataset.bell)); }
     };
   };
 

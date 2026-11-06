@@ -275,11 +275,30 @@ window.MD_DATA = (function () {
     { id: 'LL', name: 'La Liga', country: 'Spain' },
     { id: 'SA', name: 'Serie A', country: 'Italy' },
     { id: 'BL', name: 'Bundesliga', country: 'Germany' },
+    { id: 'L1', name: 'Ligue 1', country: 'France' },
     { id: 'MLS', name: 'MLS', country: 'USA' },
     { id: 'UCL', name: 'Champions League', country: 'Europe' },
     { id: 'MX', name: 'Liga MX', country: 'Mexico' },
     { id: 'BR', name: 'Brasileirão', country: 'Brazil' }
   ];
+
+  // Tournaments people can search for: the leagues above plus major cups.
+  const CUPS = [
+    { id: 'UEL', name: 'Europa League', country: 'Europe' },
+    { id: 'UECL', name: 'Conference League', country: 'Europe' },
+    { id: 'WC', name: 'FIFA World Cup', country: 'World', national: true },
+    { id: 'EURO', name: 'European Championship', country: 'Europe', national: true, aliases: 'Euros|Euro' },
+    { id: 'CA', name: 'Copa América', country: 'South America', national: true, aliases: 'Copa America' },
+    { id: 'AFCON', name: 'Africa Cup of Nations', country: 'Africa', national: true, aliases: 'AFCON' },
+    { id: 'LIB', name: 'Copa Libertadores', country: 'South America' },
+    { id: 'FAC', name: 'FA Cup', country: 'England' },
+    { id: 'CDR', name: 'Copa del Rey', country: 'Spain' },
+    { id: 'DFB', name: 'DFB-Pokal', country: 'Germany', aliases: 'German Cup' },
+    { id: 'CI', name: 'Coppa Italia', country: 'Italy', aliases: 'Italian Cup' },
+    { id: 'CDF', name: 'Coupe de France', country: 'France', aliases: 'French Cup' },
+    { id: 'LGC', name: 'Leagues Cup', country: 'USA & Mexico' }
+  ];
+  const TOURNAMENTS = LEAGUES.map((l) => Object.assign({ type: l.id === 'UCL' ? 'Cup' : 'League' }, l)).concat(CUPS.map((c) => Object.assign({ type: c.national ? 'National teams' : 'Cup' }, c)));
 
   // Fixtures. date = 'YYYY-MM-DD', time = local 24h 'HH:MM'.
   // Live / full-time status is worked out from the real clock in app.js.
@@ -453,5 +472,5 @@ window.MD_DATA = (function () {
     f1: [[4, 'H'], [29, 'H'], [51, 'A'], [63, 'H'], [80, 'H']]
   };
 
-  return { TEAMS, TEAM_GROUPS, LEAGUES, FIXTURES, MATCH_DETAIL, SKILLS, GOALS };
+  return { TEAMS, TEAM_GROUPS, LEAGUES, TOURNAMENTS, FIXTURES, MATCH_DETAIL, SKILLS, GOALS };
 })();
