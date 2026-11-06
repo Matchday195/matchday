@@ -51,7 +51,7 @@ h1, h2, .display { font-family: "Space Grotesk", Inter, system-ui, sans-serif; l
 .scroll { flex: 1; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 14px; }
 .topbar { padding: calc(14px + var(--safe-top)) 20px 4px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; background: var(--bg); z-index: 5; }
 .topbar .title { flex: 1; font-family: "Space Grotesk", sans-serif; font-size: 1.2em; font-weight: 700; text-align: center; }
-.brand { flex: 1; font-family: "Space Grotesk", sans-serif; font-size: 1.45em; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.brand { flex: 1; min-width: 0; white-space: nowrap; font-family: "Space Grotesk", sans-serif; font-size: 1.45em; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .brand b { color: var(--accent); }
 .iconbtn { width: 44px; height: 44px; flex: none; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; color: var(--text); }
 .iconbtn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
@@ -109,7 +109,7 @@ a.setrow { color: var(--text); }
 /* Loading */
 .loading { position: fixed; inset: 0; z-index: 50; background: radial-gradient(circle at 50% 42%, #18341F 0%, #0B1210 62%); color: #EEF3EF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 0 48px; transition: opacity .4s; }
 .loading.hide { opacity: 0; pointer-events: none; }
-.loading .word { font-family: "Space Grotesk", sans-serif; font-size: 44px; font-weight: 700; letter-spacing: -1px; }
+.loading .word { font-family: "Space Grotesk", sans-serif; font-size: 40px; white-space: nowrap; font-weight: 700; letter-spacing: -1px; }
 .loading .word b { color: #B6F23A; }
 .bar { width: 100%; max-width: 320px; height: 6px; margin-top: 18px; border-radius: 999px; background: #1C2722; overflow: hidden; }
 .bar > div { height: 100%; width: 0; background: #B6F23A; border-radius: 999px; }

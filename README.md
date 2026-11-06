@@ -1,4 +1,4 @@
-# Matchday
+# Matchday 195
 
 Every league, every match. A soccer app that installs on your phone and works offline.
 
@@ -6,7 +6,7 @@ Every league, every match. A soccer app that installs on your phone and works of
 
 ## What's inside
 - **Log in / create account** with "Save my login", plus guest mode
-- **Loading screen** (3.5 seconds) with the Matchday logo
+- **Loading screen** (3.5 seconds) with the Matchday 195 logo
 - **Home** with 6 cubes you can flip: Live Matches, My Calendar, Transfer News, Skills, Alerts, My Profile
 - **Matches** from all leagues, by day and league, with search
 - **Live match**: ball tracker with a minute slider and replay, player heat maps, match events

@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '1.0.2';
+  const APP_VERSION = '1.0.3';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -59,7 +59,7 @@
     wifi: 'M2 9a15 15 0 0120 0M5 12.5a10 10 0 0114 0M8.5 16a5 5 0 017 0M12 19.5h.01'
   };
   const icon = (name, size, sw) => `<svg width="${size || 20}" height="${size || 20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 2}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[name]}"/></svg>`;
-  const LOGO = (size) => `<svg width="${size}" height="${size}" viewBox="0 0 112 112" role="img" aria-label="Matchday logo"><rect x="4" y="4" width="104" height="104" rx="30" fill="#B6F23A"/><circle cx="56" cy="56" r="31" fill="none" stroke="#0B1210" stroke-width="7"/><line x1="56" y1="18" x2="56" y2="94" stroke="#0B1210" stroke-width="7" stroke-linecap="round"/><circle cx="56" cy="56" r="8" fill="#0B1210"/><path d="M25 38h10M77 74h10" stroke="#0B1210" stroke-width="7" stroke-linecap="round"/></svg>`;
+  const LOGO = (size) => `<svg width="${size}" height="${size}" viewBox="0 0 112 112" role="img" aria-label="Matchday 195 logo"><rect x="4" y="4" width="104" height="104" rx="30" fill="#B6F23A"/><circle cx="56" cy="56" r="31" fill="none" stroke="#0B1210" stroke-width="7"/><line x1="56" y1="18" x2="56" y2="94" stroke="#0B1210" stroke-width="7" stroke-linecap="round"/><circle cx="56" cy="56" r="8" fill="#0B1210"/><path d="M25 38h10M77 74h10" stroke="#0B1210" stroke-width="7" stroke-linecap="round"/></svg>`;
 
   /* ---------- user, profile, settings ---------- */
   const DEFAULT_SETTINGS = { mode: 'auto', theme: 'pitch', cbOn: false, cbType: 'rg', size: 1, darkStart: 19, darkEnd: 7, autoRefresh: true };
@@ -209,7 +209,7 @@
     return {
       html: `<div class="screen"><div class="scroll" style="padding:48px 28px 32px;gap:22px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:14px">${LOGO(64)}
-          <h1 class="page">${s ? 'Join Matchday' : 'Welcome back'}</h1>
+          <h1 class="page">${s ? 'Join Matchday 195' : 'Welcome back'}</h1>
           <p class="muted" style="margin:0;text-align:center">${s ? 'Make a profile, pick your teams, get alerts.' : 'Log in to see your teams and alerts.'}</p></div>
         <div class="seg"><button type="button" data-mode="login" aria-pressed="${!s}">Log in</button><button type="button" data-mode="signup" aria-pressed="${s}">Create account</button></div>
         <form id="authForm" novalidate style="display:flex;flex-direction:column;gap:14px">
@@ -280,7 +280,7 @@
     const upd = DataSource.lastUpdated();
     return {
       html: `<div class="screen">
-        <header class="topbar"><span class="brand">${LOGO(34)}<span>Match<b>day</b></span></span>
+        <header class="topbar"><span class="brand">${LOGO(34)}<span>Match<b>day</b> 195</span></span>
           <button type="button" class="iconbtn" id="refreshBtn" aria-label="Refresh for new updates">${icon('refresh')}</button>
           <a class="iconbtn" href="#settings" aria-label="Settings">${icon('gear')}</a>
           <a href="#profile" aria-label="Your profile">${avatarHtml(p)}</a></header>
@@ -325,7 +325,7 @@
         ${f.status === 'upcoming' ? `<button type="button" class="bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for ${esc(matchTitle(f))}">${icon('bell', 18)}</button>` : ''}</div>`;
     return {
       html: `<div class="screen">
-        <header class="topbar"><span class="brand">${LOGO(30)}<span>Match<b>day</b></span></span><button type="button" class="iconbtn" id="refreshBtn" aria-label="Refresh scores">${icon('refresh')}</button></header>
+        <header class="topbar"><span class="brand">${LOGO(30)}<span>Match<b>day</b> 195</span></span><button type="button" class="iconbtn" id="refreshBtn" aria-label="Refresh scores">${icon('refresh')}</button></header>
         ${offlineBanner()}
         <main class="scroll">${demoBanner()}
           <label class="search">${icon('search', 18)}<input id="q" type="search" placeholder="Search teams or leagues" aria-label="Search teams or leagues" value="${esc(st.q)}"></label>
@@ -472,7 +472,7 @@
       granted: ['Notifications are on', 'You’ll get alerts on this device.', 'Send a test alert', 'test'],
       default: ['Turn on notifications', 'Your phone will ask for permission.', 'Turn on', 'ask'],
       denied: ['Notifications are blocked', 'Allow them for this site in your browser or phone settings, then come back.', '', ''],
-      unsupported: ['Not supported here', 'On iPhone, add Matchday to your Home Screen first (Share → Add to Home Screen), then open it from there.', '', '']
+      unsupported: ['Not supported here', 'On iPhone, add Matchday 195 to your Home Screen first (Share → Add to Home Screen), then open it from there.', '', '']
     }[ns];
     const mine = DataSource.fixtures().filter((f) => a.matches[f.id] && f.status === 'upcoming');
     return {
@@ -481,14 +481,14 @@
         <main class="scroll">
           <div class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px"><b>${statusCard[0]}</b><span class="small muted">${statusCard[1]}</span>${statusCard[2] ? `<button type="button" class="btn" id="notifBtn" data-act="${statusCard[3]}" style="height:44px">${statusCard[2]}</button>` : ''}</div>
           <span class="label">How alerts look</span>
-          <div class="notif"><span class="ic" style="background:var(--accent)">${icon('ball', 20, 2.2)}</span><div style="flex:1"><div class="row between tiny muted"><span>Matchday</span><span>now</span></div><b class="small">GOAL! Arsenal 2 – 1 Chelsea (58')</b><div class="small muted">Ødegaard scores. Tap for the ball tracker.</div></div></div>
+          <div class="notif"><span class="ic" style="background:var(--accent)">${icon('ball', 20, 2.2)}</span><div style="flex:1"><div class="row between tiny muted"><span>Matchday 195</span><span>now</span></div><b class="small">GOAL! Arsenal 2 – 1 Chelsea (58')</b><div class="small muted">Ødegaard scores. Tap for the ball tracker.</div></div></div>
           <span class="label">Notify me about</span>
           <div class="list">${kinds.map((k) => setrow('k_' + k[0], a.kinds[k[0]], k[1], k[2])).join('')}</div>
           <span class="label">For these teams</span>
           <div class="list">${p.teams.length ? p.teams.map((c) => `<div class="setrow">${crest(c, 30)}<div class="grow"><span>${esc(T(c).name)}</span></div>${switchBtn('t_' + c, !a.muted[c], 'Alerts for ' + T(c).name)}</div>`).join('') : '<div class="setrow muted">Add favorite teams in your profile.</div>'}</div>
           <span class="label">Matches with the bell on (${mine.length})</span>
           ${mine.length ? `<div class="list">${mine.map((f) => `<a class="setrow" href="#match/${f.id}"><div class="grow"><span>${esc(matchTitle(f))}</span><span>${esc(f.league)} · ${f.date} · ${fmtTime(f.time)}</span></div>${icon('chev', 18)}</a>`).join('')}</div>` : '<p class="small muted" style="margin:0">Tap the bell next to any match to get its alerts.</p>'}
-          <p class="note">Right now alerts come while Matchday is open or running in the background. Alerts when the app is fully closed need the live server, which comes with the live data feed.</p>
+          <p class="note">Right now alerts come while Matchday 195 is open or running in the background. Alerts when the app is fully closed need the live server, which comes with the live data feed.</p>
         </main>${nav('')}</div>`,
       mount() {
         on('[data-sw]', 'click', (e, el) => {
@@ -499,7 +499,7 @@
         });
         on('#notifBtn', 'click', async (e, el) => {
           if (el.dataset.act === 'ask') { try { await Notification.requestPermission(); } catch (er) { } render(); }
-          else { const ok = await sendNotification('GOAL! Arsenal 2 – 1 Chelsea (58\')', 'This is a test alert from Matchday.', '#alerts'); toast(ok ? 'Test alert sent' : 'Couldn’t send — check your notification settings'); }
+          else { const ok = await sendNotification('GOAL! Arsenal 2 – 1 Chelsea (58\')', 'This is a test alert from Matchday 195.', '#alerts'); toast(ok ? 'Test alert sent' : 'Couldn’t send — check your notification settings'); }
         });
       }
     };
@@ -682,7 +682,7 @@
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Account</span>
             <div class="list"><a class="setrow" href="#profile"><span style="flex:1;font-weight:600">Edit profile</span>${icon('chev', 18)}</a><a class="setrow" href="#alerts"><span style="flex:1;font-weight:600">Notifications</span>${icon('chev', 18)}</a>
               <button type="button" class="setrow" id="logout" style="width:100%;border:0;background:none;color:var(--danger);font-weight:600;text-align:left">Log out</button></div></section>
-          <p class="note">Matchday v${APP_VERSION}</p>
+          <p class="note">Matchday 195 v${APP_VERSION}</p>
         </main></div>`,
       mount() {
         on('[data-smode]', 'click', (e, el) => { settings.mode = el.dataset.smode; saveSettings(); render(); });
@@ -711,7 +711,7 @@
     app.innerHTML = view.html;
     if (view.mount) view.mount();
     window.scrollTo(0, prevScroll);
-    if (render.last !== h) { const t = app.querySelector('h1, .title'); document.title = 'Matchday' + (t ? ' – ' + t.textContent.trim() : ''); }
+    if (render.last !== h) { const t = app.querySelector('h1, .title'); document.title = 'Matchday 195' + (t ? ' – ' + t.textContent.trim() : ''); }
     render.last = h;
   }
   window.addEventListener('hashchange', render);
@@ -728,8 +728,8 @@
   /* ---------- loading screen ---------- */
   function showLoading(done) {
     const el = document.createElement('div');
-    el.className = 'loading'; el.setAttribute('role', 'progressbar'); el.setAttribute('aria-label', 'Loading Matchday');
-    el.innerHTML = `${LOGO(112)}<div class="word">Match<b>day</b></div><div class="bar"><div></div></div>`;
+    el.className = 'loading'; el.setAttribute('role', 'progressbar'); el.setAttribute('aria-label', 'Loading Matchday 195');
+    el.innerHTML = `${LOGO(112)}<div class="word">Match<b>day</b> 195</div><div class="bar"><div></div></div>`;
     document.body.appendChild(el);
     requestAnimationFrame(() => el.querySelector('.bar').classList.add('run'));
     setTimeout(() => { done(); el.classList.add('hide'); setTimeout(() => el.remove(), 450); }, 3500);
