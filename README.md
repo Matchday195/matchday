@@ -8,8 +8,9 @@ Every league, every match. A soccer app that installs on your phone and works of
 - **Log in / create account** with "Save my login", plus guest mode
 - **Loading screen** (3.5 seconds) with the Matchday 195 logo
 - **Home** with 6 cubes you can flip: Live Matches, My Calendar, Transfer News, Skills, Alerts, My Profile
-- **Matches** from all leagues, by day and league, with search
-- **Live match**: ball tracker with a minute slider and replay, player heat maps, match events
+- **Matches**: real fixtures, scores and results by day and league, with search
+- **Match page**: score, status, kickoff in your time, half-time score
+- **Tournament pages**: real league tables, matches and every team
 - **My calendar**: favorite teams by month or matchweek, with alert bells
 - **Alerts**: choose kickoff, lineups, goals, red cards, half-time, full-time
 - **Transfer news**: all teams or my teams, done deals / rumours / loans
@@ -23,7 +24,8 @@ Every league, every match. A soccer app that installs on your phone and works of
 - **Android (Chrome):** open the link → menu ⋮ → **Install app**
 
 ## Notes
-- Scores, fixtures and transfers are **sample data** until a live data feed is connected.
+- Fixtures, scores and tables are **real**, from football-data.org's free plan (12 competitions; scores can run a few minutes behind). GitHub fetches them about every 10 minutes into the `data` branch. MLS, Liga MX and other leagues outside the free plan show no games.
+- Transfer headlines are real, from Sky Sports and The Guardian.
 - Accounts and profiles are saved on the device for now.
 - Works offline after the first visit.
 

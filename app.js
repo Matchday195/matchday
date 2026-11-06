@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '2.0.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -69,7 +69,7 @@
 
   function currentUser() { const s = sess.get(); return s ? s.email : null; }
   function profileKey() { return 'profile_' + (currentUser() || 'guest'); }
-  function defaultProfile(name, username) { return { name: name || 'Guest', username: username || '', bio: '', avatar: '#5EE0C1', photo: '', pos: 'MID', player: '', teams: ['ARS', 'BAR', 'MIA'] }; }
+  function defaultProfile(name, username) { return { name: name || 'Guest', username: username || '', bio: '', avatar: '#5EE0C1', photo: '', pos: '', player: '', teams: [] }; }
   function getProfile() { return Object.assign(defaultProfile(), store.get(profileKey(), {})); }
   function saveProfile(p) { store.set(profileKey(), p); }
   function initials(name) { const p = String(name || '?').trim().split(/\s+/); return ((p[0] || '?')[0] + (p[1] ? p[1][0] : (p[0][1] || ''))).toUpperCase(); }
@@ -81,7 +81,7 @@
   function getAlerts() { const a = store.get(alertsKey(), {}); return { kinds: Object.assign({}, DEFAULT_ALERTS.kinds, a.kinds), muted: a.muted || {}, matches: a.matches || {} }; }
   const saveAlerts = (a) => store.set(alertsKey(), a);
   const progKey = () => 'skills_' + (currentUser() || 'guest');
-  const getProg = () => store.get(progKey(), { last: 'laces', steps: { laces: 2 }, done: {} });
+  const getProg = () => store.get(progKey(), { last: null, steps: {}, done: {} });
   const saveProg = (p) => store.set(progKey(), p);
 
   /* ---------- theme ---------- */
@@ -130,49 +130,86 @@
     return { load, list: () => list };
   })();
 
-  /* ---------- data source (sample data now; swap for a live feed later) ---------- */
-  const DataSource = (function () {
-    const BASE = parseYmd('2026-11-05');
-    let lastUpdated = new Date();
-    function dayShift() { const t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((t - BASE) / 86400000); }
-    // Goals for a fixture: [minute, 'H' or 'A']. Sample goals come from data.js; others are made up from the match id.
-    function goalsFor(f) {
-      if (D.GOALS && D.GOALS[f.id]) return D.GOALS[f.id];
-      let h = 0; for (const c of f.id + f.home + f.away) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-      const out = []; const n = h % 5;
-      for (let i = 0; i < n; i++) { h = (h * 1103515245 + 12345) >>> 0; out.push([5 + (h % 85), (h >> 8) % 2 ? 'H' : 'A']); }
-      return out.sort((a, b) => a[0] - b[0]);
+  const fold = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  /* ---------- real match data (football-data.org free plan, fetched by GitHub every ~10 minutes) ---------- */
+  // Competition codes from football-data.org -> league names used in the app.
+  const COMP_LEAGUE = { PL: 'Premier League', PD: 'La Liga', SA: 'Serie A', BL1: 'Bundesliga', FL1: 'Ligue 1', CL: 'Champions League', DED: 'Eredivisie', PPL: 'Primeira Liga', ELC: 'Championship', BSA: 'Brasileirão', WC: 'FIFA World Cup', EC: 'European Championship', CLI: 'Copa Libertadores' };
+  const COMP_GROUP = { PL: 'Premier League', PD: 'La Liga', SA: 'Serie A', BL1: 'Bundesliga', FL1: 'Ligue 1', BSA: 'Brasileirão', WC: 'National teams', EC: 'National teams' };
+  const TOUR_CODE = { PL: 'PL', LL: 'PD', SA: 'SA', BL: 'BL1', L1: 'FL1', BR: 'BSA', DED: 'DED', PPL: 'PPL', ELC: 'ELC' };
+  const COVERED = new Set(Object.values(COMP_LEAGUE));
+  const liveTeams = {};
+  const Real = (function () {
+    const BASE = 'https://raw.githubusercontent.com/Matchday195/matchday/data/';
+    let m = store.get('real_matches', null), s = store.get('real_standings', null);
+    let state = m ? 'ok' : 'loading';
+    async function getJson(name) {
+      const r = await fetch(BASE + name + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
     }
-    // Status comes from the real clock: before kickoff = upcoming, then 1st half,
-    // half-time (15 min), 2nd half, full time about 110 minutes after kickoff.
+    async function load() {
+      try { const j = await getJson('matches.json'); if (j && Array.isArray(j.matches)) { m = j; state = 'ok'; store.set('real_matches', j); cache = null; } }
+      catch (e) { if (!m) state = navigator.onLine ? 'none' : 'offline'; }
+      try { const j = await getJson('standings.json'); if (j && j.tables) { s = j; store.set('real_standings', j); } } catch (e) { /* tables are optional */ }
+      return state === 'ok';
+    }
+    let cache = null, cacheMin = -1;
     function fixtures() {
-      const shift = dayShift(); const now = Date.now();
-      return D.FIXTURES.map((f) => {
-        const d = parseYmd(f.date); d.setDate(d.getDate() + shift);
-        const g = Object.assign({}, f, { date: ymd(d) });
-        delete g.minute; delete g.hs; delete g.as; delete g.ht;
-        const [hh, mm] = f.time.split(':').map(Number); const ko = new Date(d); ko.setHours(hh, mm, 0, 0);
-        const el = Math.floor((now - ko) / 60000);
-        let minute;
-        if (el < 0) { g.status = 'upcoming'; return g; }
-        if (el < 45) minute = el + 1;
-        else if (el < 60) { minute = 45; g.ht = true; }
-        else if (el < 110) minute = Math.min(90, el - 14);
-        else minute = 90;
-        g.status = el < 110 ? 'live' : 'ft';
-        if (g.status === 'live') g.minute = minute;
-        const goals = goalsFor(f).filter((x) => x[0] <= minute);
-        g.hs = goals.filter((x) => x[1] === 'H').length; g.as = goals.filter((x) => x[1] === 'A').length;
-        return g;
-      });
+      const min = Math.floor(Date.now() / 60000);
+      if (!cache || cacheMin !== min) { cache = (m ? m.matches : []).map(convert); cacheMin = min; }
+      return cache;
     }
-    return {
-      fixtures, team: (c) => D.TEAMS[c] || extraTeams()[c] || { name: c, color: '#777', short: String(c).slice(0, 3), league: '' },
-      detail: (id) => D.MATCH_DETAIL[id] || null, skills: () => D.SKILLS, leagues: () => D.LEAGUES,
-      lastUpdated: () => lastUpdated,
-      refresh() { return new Promise((res) => setTimeout(() => { lastUpdated = new Date(); store.set('lastUpdated', lastUpdated.getTime()); res(); }, 700)); }
-    };
+    return { load, fixtures, updated: () => m && m.updated, tables: () => (s && s.tables) || {}, state: () => state };
   })();
+  // Find the app's own team for a football-data.org team (by name, short name or 3-letter code).
+  const stripName = (t) => fold(t).replace(/\b(fc|cf|afc|sc|ac|cd|ss|ssc|as|sv|vfb|vfl|fk|sk|club|de|calcio|football|futbol)\b/g, ' ').replace(/[^a-z0-9]+/g, '');
+  let nameIndex = null;
+  function teamIndex() {
+    if (nameIndex) return nameIndex;
+    nameIndex = {};
+    Object.keys(D.TEAM_GROUPS).forEach((g) => D.TEAM_GROUPS[g].forEach((t) => {
+      [t[1]].concat(t[3] ? t[3].split('|') : []).forEach((n) => { const k = stripName(n); if (k) (nameIndex[g + ':' + k] = t[0]); });
+    }));
+    return nameIndex;
+  }
+  const keyCache = {};
+  function keyFor(team, code, league) {
+    if (keyCache[team.id]) return keyCache[team.id];
+    const idx = teamIndex(); const group = COMP_GROUP[code];
+    const groups = group ? [group] : Object.keys(D.TEAM_GROUPS).filter((g) => g !== 'National teams');
+    let key = null;
+    for (const g of groups) {
+      for (const n of [team.short, team.name]) { const k = n && idx[g + ':' + stripName(n)]; if (k) { key = k; break; } }
+      if (key) break;
+      if (group && team.tla && D.TEAM_GROUPS[g].some((t) => t[0] === team.tla)) { key = team.tla; break; }
+    }
+    if (!key && group) { // looser match inside the league, e.g. "FC Internazionale Milano" -> Inter
+      const full = stripName(team.name);
+      const hit = D.TEAM_GROUPS[group].find((t) => [t[1]].concat(t[3] ? t[3].split('|') : []).some((n) => { const k = stripName(n); return k.length >= 4 && full.includes(k); }));
+      if (hit) key = hit[0];
+    }
+    if (!key) { key = 'FD-' + team.id; liveTeams[key] = { name: team.short || team.name, color: teamColor(team.name || String(team.id)), short: (team.tla || teamShort(team.name || '?')).slice(0, 4), league }; }
+    keyCache[team.id] = key;
+    return key;
+  }
+  function convert(x) {
+    const d = new Date(x.utcDate); const league = COMP_LEAGUE[x.comp] || x.compName || 'Other';
+    const f = { id: 'fd' + x.id, real: true, league, comp: x.comp, date: ymd(d), time: pad(d.getHours()) + ':' + pad(d.getMinutes()), kickoff: d,
+      home: keyFor(x.home, x.comp, league), away: keyFor(x.away, x.comp, league), matchday: x.matchday, stage: x.stage, hs: x.hs, as: x.as, hht: x.hht, aht: x.aht };
+    const st = x.status;
+    if (st === 'IN_PLAY' || st === 'PAUSED' || st === 'LIVE') { f.status = 'live'; f.ht = st === 'PAUSED'; f.minute = x.minute || null; if (f.hs == null) { f.hs = 0; f.as = 0; } }
+    else if (st === 'FINISHED' || st === 'AWARDED') f.status = 'ft';
+    else if (st === 'POSTPONED' || st === 'SUSPENDED' || st === 'CANCELLED') { f.status = 'off'; f.offLabel = { POSTPONED: 'Postponed', SUSPENDED: 'Suspended', CANCELLED: 'Cancelled' }[st]; }
+    else f.status = 'upcoming';
+    return f;
+  }
+  const DataSource = {
+    fixtures: () => Real.fixtures(),
+    team: (c) => D.TEAMS[c] || extraTeams()[c] || liveTeams[c] || { name: c, color: '#777', short: String(c).slice(0, 3), league: '' },
+    skills: () => D.SKILLS, leagues: () => D.LEAGUES,
+    lastUpdated: () => (Real.updated() ? new Date(Real.updated()) : null),
+    refresh: () => Real.load()
+  };
   const T = DataSource.team;
 
   /* ---------- real transfer headlines (news.json is updated by GitHub every 30 minutes) ---------- */
@@ -201,8 +238,14 @@
   }
   const crest = (code, size, info) => { const t = info || T(code); const sh = t.short || code; return `<span class="crest" style="width:${size}px;height:${size}px;background:${t.color};font-size:${Math.round(size / (sh.length > 3 ? 4.2 : 3.3))}px">${esc(sh)}</span>`; };
   const matchTitle = (f) => T(f.home).name + ' vs ' + T(f.away).name;
-  function statusText(f) { return f.status === 'live' ? (f.ht ? 'HT' : f.minute + "'") : f.status === 'ft' ? 'FT' : fmtTime(f.time); }
-  const liveLabel = (f) => f.ht ? 'HALF-TIME' : 'LIVE ' + f.minute + "'";
+  function statusText(f) { return f.status === 'live' ? (f.ht ? 'HT' : f.minute ? f.minute + "'" : 'LIVE') : f.status === 'ft' ? 'FT' : f.status === 'off' ? (f.offLabel === 'Postponed' ? 'PPD' : f.offLabel.slice(0, 4) + '.') : fmtTime(f.time); }
+  const liveLabel = (f) => f.ht ? 'HALF-TIME' : f.minute ? 'LIVE ' + f.minute + "'" : 'LIVE';
+  const resultText = (f) => f.status === 'upcoming' ? fmtTime(f.time) : f.status === 'live' ? liveLabel(f) + ' · ' + f.hs + '–' + f.as : f.status === 'ft' ? 'FT ' + f.hs + '–' + f.as : f.offLabel;
+  function noDataCard(msg) {
+    const st = Real.state();
+    const text = msg || (st === 'loading' ? 'Loading real match data…' : st === 'offline' ? 'You’re offline and no match data is saved yet.' : 'Real match data isn’t connected yet. It appears once the football-data.org key is saved in GitHub.');
+    return `<div class="card small muted" style="padding:14px">${text}</div>`;
+  }
 
   /* ---------- app update + refresh ---------- */
   let swReg = null;
@@ -245,9 +288,8 @@
     const items = [['matches', 'Matches', 'ball'], ['home', 'Home', 'home'], ['skills', 'Skills', 'book']];
     return `<nav class="nav" aria-label="Main">${items.map(([r, l, i]) => `<a href="#${r}" ${active === r ? 'aria-current="page"' : ''}>${icon(i, 22)}${l}</a>`).join('')}</nav>`;
   }
-  const demoBanner = () => `<div class="demo" role="note"><b>DEMO DATA</b><span>These games and scores are made up for testing. They are not real yet.</span></div>`;
   const backBtn = (href, label) => `<a class="iconbtn" href="${href}" aria-label="${label || 'Back'}">${icon('back')}</a>`;
-  const offlineBanner = () => navigator.onLine ? '' : `<div class="offline-banner">Offline · showing saved data from ${fmtClock(DataSource.lastUpdated())}</div>`;
+  const offlineBanner = () => navigator.onLine ? '' : `<div class="offline-banner">Offline · showing saved data${DataSource.lastUpdated() ? ' from ' + fmtClock(DataSource.lastUpdated()) : ''}</div>`;
   function switchBtn(id, onState, label) { return `<button type="button" class="switch" data-sw="${id}" aria-pressed="${!!onState}" aria-label="${esc(label)}"></button>`; }
   function setrow(id, onState, title, sub) { return `<div class="setrow"><div class="grow"><span>${esc(title)}</span>${sub ? `<span>${esc(sub)}</span>` : ''}</div>${switchBtn(id, onState, title)}</div>`; }
 
@@ -311,23 +353,23 @@
     const mine = fx.filter((f) => f.status === 'upcoming' && f.date >= today && (p.teams.includes(f.home) || p.teams.includes(f.away))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const nextDay = mine[0] ? parseYmd(mine[0].date) : null;
     const prog = getProg(); const sk = DataSource.skills().find((x) => x.id === prog.last) || DataSource.skills()[0];
-    const stepNow = (prog.steps[sk.id] || 0);
+    const stepNow = (prog.steps[sk.id] || 0); const started = !!prog.last;
     const tr = News.items();
     const a = getAlerts(); const alertCount = Object.values(a.matches).filter(Boolean).length;
     const lines = (arr) => arr.map((l) => `<div class="ln"><b>${esc(l[0])}</b><span>${esc(l[1])}</span></div>`).join('');
     const cubes = [
-      { id: 'live', t: 'Live Matches', s: 'DEMO · ' + (live.length ? live.length + ' live now' : 'no live games'), c: 'var(--c-live)', href: '#matches', ic: 'ball',
+      { id: 'live', t: 'Live Matches', s: Real.state() !== 'ok' ? 'No match data yet' : (live.length ? live.length + ' live now' : 'No live games'), c: 'var(--c-live)', href: '#matches', ic: 'ball',
         l: live.slice(0, 2).map((f) => [T(f.home).name + ' ' + f.hs + '–' + f.as + ' ' + T(f.away).name, liveLabel(f) + ' · ' + f.league]) },
       { id: 'cal', t: 'My Calendar', s: nextDay ? 'Next: ' + DOW[nextDay.getDay()] + ', ' + MONTHS[nextDay.getMonth()].slice(0, 3) + ' ' + nextDay.getDate() : 'No games soon', c: 'var(--c-cal)', href: '#calendar', ic: 'cal',
         l: mine.slice(0, 2).map((f) => [matchTitle(f), DOW[parseYmd(f.date).getDay()] + ' · ' + fmtTime(f.time)]) },
       { id: 'tr', t: 'Transfer News', s: tr.length ? 'Latest: ' + timeAgo(tr[0].published) : (News.state() === 'loading' ? 'Loading…' : 'Real headlines'), c: 'var(--c-tr)', href: '#transfers', ic: 'swap',
         l: tr.slice(0, 1).map((x) => [x.title, x.source + ' · ' + timeAgo(x.published)]) },
-      { id: 'sk', t: 'Skills', s: sk.name.split(' (')[0] + ' · ' + (stepNow + 1) + '/' + sk.steps.length, c: 'var(--c-sk)', href: '#skill/' + sk.id, ic: 'book',
-        l: [['Continue: ' + sk.name.split(' (')[0], 'Step ' + (stepNow + 1) + ' of ' + sk.steps.length]] },
+      { id: 'sk', t: 'Skills', s: started ? sk.name.split(' (')[0] + ' · ' + (stepNow + 1) + '/' + sk.steps.length : DataSource.skills().length + ' tutorials', c: 'var(--c-sk)', href: started ? '#skill/' + sk.id : '#skills', ic: 'book',
+        l: [started ? ['Continue: ' + sk.name.split(' (')[0], 'Step ' + (stepNow + 1) + ' of ' + sk.steps.length] : ['Start learning', 'Shooting, dribbling, passing']] },
       { id: 'al', t: 'Alerts', s: alertCount ? alertCount + ' matches on' : 'Set up alerts', c: 'var(--c-al)', href: '#alerts', ic: 'bell',
         l: [['Notifications ' + ({ granted: 'on', denied: 'blocked', default: 'off', unsupported: 'not supported' })[notifyState()], 'Goals, kickoff, full time']] },
-      { id: 'pr', t: 'My Profile', s: p.name + (p.teams[0] ? ' · ' + T(p.teams[0]).name + ' fan' : ''), c: 'var(--c-pr)', href: '#profile', ic: 'user',
-        l: [[p.teams.length + ' favorite teams', p.teams.map((c) => T(c).name).join(' · ') || 'Add some'], ['Plays ' + ({ GK: 'goalkeeper', DEF: 'defence', MID: 'midfield', FWD: 'forward' })[p.pos], 'Theme: ' + settings.theme]] }
+      { id: 'pr', t: 'My Profile', s: p.name + (p.teams[0] ? ' · ' + T(p.teams[0]).name + ' fan' : ' · add your teams'), c: 'var(--c-pr)', href: '#profile', ic: 'user',
+        l: [[p.teams.length + ' favorite teams', p.teams.map((c) => T(c).name).join(' · ') || 'Add some'], p.pos ? ['Plays ' + ({ GK: 'goalkeeper', DEF: 'defence', MID: 'midfield', FWD: 'forward' })[p.pos], 'Theme: ' + settings.theme] : ['Theme: ' + settings.theme, 'Edit your profile']] }
     ];
     const upd = DataSource.lastUpdated();
     return {
@@ -337,8 +379,8 @@
           <a class="iconbtn" href="#settings" aria-label="Settings">${icon('gear')}</a>
           <a href="#profile" aria-label="Your profile">${avatarHtml(p)}</a></header>
         ${offlineBanner()}
-        <main class="scroll">${demoBanner()}
-          <div><h1 class="page">Hey, ${esc(p.name)}</h1><span class="muted small">Updated ${fmtClock(upd)}</span></div>
+        <main class="scroll">
+          <div><h1 class="page">Hey, ${esc(p.name)}</h1><span class="muted small">${upd ? 'Scores updated ' + timeAgo(upd.toISOString()) : 'Match data not connected yet'}</span></div>
           <a class="search" href="#search" style="color:var(--muted)" aria-label="Search teams and tournaments">${icon('search', 18)}<span>Search teams and tournaments</span></a>
           <div class="cubes">${cubes.map((c) => `<div class="cube ${st.open[c.id] ? 'open' : ''}" style="--c:${c.c}">
             <div class="cube-inner">
@@ -368,28 +410,37 @@
     let fx = DataSource.fixtures().filter((f) => f.date === ymd(sel));
     if (st.league !== 'All') fx = fx.filter((f) => f.league === st.league);
     if (q) fx = fx.filter((f) => (T(f.home).name + ' ' + T(f.away).name + ' ' + f.league).toLowerCase().includes(q));
-    const featured = fx.find((f) => f.status === 'live' && f.featured) || fx.find((f) => f.status === 'live');
+    const p = getProfile();
+    const featured = fx.find((f) => f.status === 'live' && (p.teams.includes(f.home) || p.teams.includes(f.away))) || fx.find((f) => f.status === 'live');
     const a = getAlerts();
-    const groups = DataSource.leagues().map((l) => ({ l, m: fx.filter((f) => f.league === l.name && f !== featured) })).filter((g) => g.m.length);
+    const known = D.TOURNAMENTS.map((t) => t.name);
+    const groups = D.TOURNAMENTS.map((l) => ({ l, m: fx.filter((f) => f.league === l.name && f !== featured) }))
+      .concat([{ l: { name: 'Other', country: '' }, m: fx.filter((f) => !known.includes(f.league) && f !== featured) }]).filter((g) => g.m.length);
+    let empty = '';
+    if (!groups.length && !featured) {
+      if (Real.state() !== 'ok') empty = noDataCard();
+      else if (st.league !== 'All' && !COVERED.has(st.league)) empty = noDataCard(esc(st.league) + ' isn\u2019t included in the free data plan, so there are no games to show for it.');
+      else empty = noDataCard(q ? 'No matches match your search on this day.' : 'No matches on this day.');
+    }
     const row = (f) => `<div class="mrow"><a href="#match/${f.id}" style="display:flex;align-items:center;gap:10px;flex:1;color:var(--text)">
         <span class="st ${f.status === 'live' ? 'status-live' : f.status === 'ft' ? 'muted' : ''}">${statusText(f)}</span>
-        <span class="teams"><div><span class="dot" style="background:${T(f.home).color}"></span><span>${esc(T(f.home).name)}</span><b>${f.hs != null ? f.hs : ''}</b></div>
-        <div><span class="dot" style="background:${T(f.away).color}"></span><span>${esc(T(f.away).name)}</span><b>${f.as != null ? f.as : ''}</b></div></span></a>
+        <span class="teams"><div><span class="dot" style="background:${T(f.home).color}"></span><span>${esc(T(f.home).name)}</span><b>${f.status !== 'upcoming' && f.hs != null ? f.hs : ''}</b></div>
+        <div><span class="dot" style="background:${T(f.away).color}"></span><span>${esc(T(f.away).name)}</span><b>${f.status !== 'upcoming' && f.as != null ? f.as : ''}</b></div></span></a>
         ${f.status === 'upcoming' ? `<button type="button" class="bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for ${esc(matchTitle(f))}">${icon('bell', 18)}</button>` : ''}</div>`;
     return {
       html: `<div class="screen">
         <header class="topbar"><span class="brand">${LOGO(30)}<span>Match<b>day</b> 195</span></span><button type="button" class="iconbtn" id="refreshBtn" aria-label="Refresh scores">${icon('refresh')}</button></header>
         ${offlineBanner()}
-        <main class="scroll">${demoBanner()}
+        <main class="scroll">
           <label class="search">${icon('search', 18)}<input id="q" type="search" placeholder="Search teams or leagues" aria-label="Search teams or leagues" value="${esc(st.q)}"></label>
           <div class="daystrip">${days.map(({ o, d }) => `<button type="button" data-day="${o}" aria-pressed="${st.day === o}"><span>${o === 0 ? 'Today' : DOW[d.getDay()]}</span><span>${d.getDate()}</span></button>`).join('')}</div>
           <div class="chips">${['All'].concat(DataSource.leagues().map((l) => l.name)).map((l) => `<button type="button" class="chip" data-league="${esc(l)}" aria-pressed="${st.league === l}">${esc(l)}</button>`).join('')}</div>
           ${featured ? `<a class="featured" href="#match/${featured.id}">
             <div class="row between small muted"><span>${esc(featured.league)}</span><span class="live-pill">${liveLabel(featured)}</span></div>
             <div class="scoreline"><div class="side">${crest(featured.home, 48)}${esc(T(featured.home).name)}</div><div class="bigscore">${featured.hs} – ${featured.as}</div><div class="side">${crest(featured.away, 48)}${esc(T(featured.away).name)}</div></div>
-            <div class="row between small" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--accent);font-weight:700"><span>${DataSource.detail(featured.id) ? 'Ball tracker · Heat maps · Events' : 'Match details'}</span>${icon('chev', 18)}</div></a>` : ''}
-          ${groups.length ? groups.map((g) => `<section style="display:flex;flex-direction:column;gap:8px"><div class="row between"><b class="small">${esc(g.l.name)}</b><span class="tiny muted">${esc(g.l.country)}</span></div><div class="list">${g.m.map(row).join('')}</div></section>`).join('') : (featured ? '' : `<div class="card muted" style="padding:20px;text-align:center">No matches${q ? ' match your search' : ' on this day'}.</div>`)}
-          <p class="note">Sample data · live feed coming next</p>
+            <div class="row between small" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--accent);font-weight:700"><span>Match details</span>${icon('chev', 18)}</div></a>` : ''}
+          ${groups.length ? groups.map((g) => `<section style="display:flex;flex-direction:column;gap:8px"><div class="row between"><b class="small">${esc(g.l.name)}</b><span class="tiny muted">${esc(g.l.country)}</span></div><div class="list">${g.m.map(row).join('')}</div></section>`).join('') : empty}
+          ${Real.state() === 'ok' ? `<p class="note">Real data from football-data.org · updated ${timeAgo(Real.updated())} · free plan scores can run a few minutes behind</p>` : ''}
         </main>${nav('matches')}</div>`,
       mount() {
         on('[data-day]', 'click', (e, el) => { st.day = Number(el.dataset.day); render(); });
@@ -408,70 +459,29 @@
     render();
   }
 
-  /* ----- Match detail ----- */
-  function ballPos(m) {
-    const x = 50 + 34 * Math.sin(m * 0.23) + 8 * Math.sin(m * 0.91);
-    const y = 50 + 30 * Math.sin(m * 0.37 + 1.2) + 6 * Math.cos(m * 1.3);
-    return { x: Math.max(4, Math.min(96, x)), y: Math.max(6, Math.min(94, y)) };
-  }
-  const PITCH = (stripes) => `<svg class="pitch" viewBox="0 0 105 68" preserveAspectRatio="none" aria-hidden="true"><rect width="105" height="68" fill="${stripes ? '#1F6B3A' : '#173F26'}"/>${stripes ? [0, 21, 42, 63, 84].map((x) => `<rect x="${x}" width="10.5" height="68" fill="#237541"/>`).join('') : ''}<g fill="none" stroke="#E8F5EC" stroke-opacity=".6" stroke-width=".4"><rect x="1" y="1" width="103" height="66"/><line x1="52.5" y1="1" x2="52.5" y2="67"/><circle cx="52.5" cy="34" r="9.15"/><rect x="1" y="13.85" width="16.5" height="40.3"/><rect x="87.5" y="13.85" width="16.5" height="40.3"/><rect x="1" y="24.85" width="5.5" height="18.3"/><rect x="98.5" y="24.85" width="5.5" height="18.3"/></g></svg>`;
+  /* ----- Match page (real data only) ----- */
   screens.match = function (id) {
     const f = DataSource.fixtures().find((x) => x.id === id);
-    if (!f) return { html: `<div class="screen"><header class="topbar">${backBtn('#matches')}<span class="title">Match</span><span class="spacer44"></span></header><main class="scroll"><p class="muted">Match not found.</p></main></div>` };
-    const det = f.status === 'upcoming' ? null : DataSource.detail(id);
-    const key = 'match_' + id;
-    const st = screens.match[key] || (screens.match[key] = { tab: det ? 'ball' : 'events', minute: f.minute || 90, player: 0 });
-    const maxMin = f.status === 'live' ? f.minute : 90;
-    if (!det) st.tab = 'events';
-    if (st.minute > maxMin) st.minute = maxMin;
-    const a = getAlerts();
-    const tabs = det ? [['ball', 'Ball tracker'], ['heat', 'Heat maps'], ['events', 'Events']] : [['events', 'Info']];
-    let body = '';
-    if (st.tab === 'ball' && det) {
-      const b = ballPos(st.minute); const trail = [];
-      for (let i = 6; i >= 1; i--) if (st.minute - i * 0.5 > 0) { const q = ballPos(st.minute - i * 0.5); trail.push(`<span class="trail" style="left:${q.x}%;top:${q.y}%;opacity:${(0.12 * (7 - i)).toFixed(2)}"></span>`); }
-      const zone = b.x < 33 ? T(f.home).name + ' attacking third' : b.x > 67 ? T(f.away).name + ' attacking third' : 'Midfield';
-      const goals = det.events.filter((e) => e.type === 'goal' && e.min <= maxMin);
-      body = `<div class="row between tiny muted"><span>← ${esc(T(f.home).name)} attack</span><span>${esc(T(f.away).name)} attack →</span></div>
-        <div class="pitch-wrap" id="pitch">${PITCH(true)}${trail.join('')}<span class="ball" style="left:${b.x}%;top:${b.y}%"></span></div>
-        <div class="row between"><b class="display" style="font-size:1.4em">${st.minute}'</b><span class="small muted">${esc(zone)}</span></div>
-        <input type="range" id="minute" min="1" max="${maxMin}" value="${st.minute}" aria-label="Match minute">
-        <div class="marks">${goals.map((g) => `<span style="left:${((g.min - 1) / Math.max(1, maxMin - 1) * 100).toFixed(1)}%">⚽ ${g.min}</span>`).join('')}</div>
-        <div class="row"><button type="button" class="btn" id="goLive" style="height:46px">${f.status === 'live' ? 'Jump to live' : 'Jump to end'}</button><button type="button" class="btn ghost" id="replay" style="height:46px">${st.playing ? 'Stop replay' : 'Replay from 1\''}</button></div>`;
-    } else if (st.tab === 'heat' && det) {
-      const pl = det.players[st.player];
-      body = `<div class="row">${det.players.map((x, i) => `<button type="button" class="chip" data-player="${i}" aria-pressed="${st.player === i}" style="flex:1;height:56px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span>${esc(x.name)}</span><span class="tiny" style="opacity:.75">${esc(x.role)}</span></button>`).join('')}</div>
-        <div class="pitch-wrap">${PITCH(false)}${pl.spots.map((s) => `<span class="blob" style="left:${s[0]}%;top:${s[1]}%;width:${s[2] / 3.5}%;aspect-ratio:1;background:radial-gradient(circle, rgba(255,70,40,${s[3]}) 0%, rgba(255,190,40,${(s[3] * .6).toFixed(2)}) 40%, rgba(255,230,80,0) 70%)"></span>`).join('')}</div>
-        <div class="stat3">${pl.stats.map((s) => `<div class="card"><span class="tiny muted">${esc(s[0])}</span><b>${esc(s[1])}</b></div>`).join('')}</div>`;
-    } else {
-      const evs = det ? det.events.filter((e) => e.min <= maxMin).slice().reverse() : [];
-      const col = { goal: 'var(--accent)', yellow: '#FFD23F', red: 'var(--loss)', sub: 'var(--c-cal)' };
-      body = evs.length ? `<div class="list">${evs.map((e) => `<div class="ev"><b class="small muted" style="width:34px">${e.min}'</b><span class="mk" style="background:${col[e.type]}"></span><div style="flex:1"><div style="font-weight:600">${esc(e.title)}</div><div class="small muted">${esc(e.sub)}</div></div><b class="tiny muted">${esc(e.team)}</b></div>`).join('')}</div>`
-        : `<div class="card" style="padding:16px"><b>${esc(f.league)}</b><p class="muted small" style="margin:6px 0 0">${f.status === 'upcoming' ? 'Kickoff ' + fmtTime(f.time) + '. Turn on the bell to get a reminder.' : 'Detailed tracking for this match will appear when the live data feed is connected.'}</p></div>`;
-    }
+    if (!f) return { html: `<div class="screen"><header class="topbar">${backBtn('#matches')}<span class="title">Match</span><span class="spacer44"></span></header><main class="scroll">${noDataCard(Real.state() === 'ok' ? 'This match isn’t in the current data any more.' : null)}</main></div>` };
+    const a = getAlerts(); const k = f.kickoff || parseYmd(f.date);
+    const when = DOW[k.getDay()] + ', ' + MONTHS[k.getMonth()] + ' ' + k.getDate() + ' · ' + fmtTime(f.time);
+    const rows = [['Competition', f.league + (f.matchday ? ' · Matchday ' + f.matchday : '')], ['Kickoff', when + ' (your time)']];
+    if (f.hht != null && f.status !== 'upcoming') rows.push(['Half-time', f.hht + ' – ' + f.aht]);
+    if (f.status === 'off') rows.push(['Status', f.offLabel]);
+    const center = f.status === 'upcoming' || f.status === 'off' ? 'vs' : f.hs + ' – ' + f.as;
+    const tag = f.status === 'live' ? `<span class="live-pill">${liveLabel(f)}</span>` : `<span class="small muted">${f.status === 'ft' ? 'Full time' : f.status === 'off' ? esc(f.offLabel) : fmtTime(f.time)}</span>`;
     return {
       html: `<div class="screen">
-        <header class="topbar">${backBtn('#matches', 'Back to matches')}<span class="title small muted" style="font-family:Inter;font-weight:500">${esc(f.league)}${det ? ' · ' + esc(det.venue) : ''}</span>
+        <header class="topbar">${backBtn('#matches', 'Back to matches')}<span class="title small muted" style="font-family:Inter;font-weight:500">${esc(f.league)}</span>
           ${f.status === 'upcoming' ? `<button type="button" class="iconbtn bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for this match">${icon('bell')}</button>` : '<span class="spacer44"></span>'}</header>
-        <div style="padding:10px 20px" class="scoreline"><div class="side">${crest(f.home, 52)}${esc(T(f.home).name)}</div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div class="bigscore">${f.hs != null ? f.hs + ' – ' + f.as : 'vs'}</div>${f.status === 'live' ? `<span class="live-pill">${liveLabel(f)}</span>` : `<span class="small muted">${f.status === 'ft' ? 'Full time' : fmtTime(f.time)}</span>`}</div>
-          <div class="side">${crest(f.away, 52)}${esc(T(f.away).name)}</div></div>
-        <div style="padding:0 20px"><div class="seg">${tabs.map(([k, l]) => `<button type="button" data-tab="${k}" aria-pressed="${st.tab === k}">${l}</button>`).join('')}</div></div>
-        <main class="scroll">${demoBanner()}${body}</main></div>`,
-      mount() {
-        on('[data-tab]', 'click', (e, el) => { st.tab = el.dataset.tab; stopReplay(); render(); });
-        on('[data-player]', 'click', (e, el) => { st.player = Number(el.dataset.player); render(); });
-        on('[data-bell]', 'click', (e, el) => toggleMatchAlert(el.dataset.bell));
-        on('#minute', 'input', (e) => { st.minute = Number(e.target.value); stopReplay(); render(); const r = qs('#minute'); if (r) r.focus(); });
-        on('#goLive', 'click', () => { stopReplay(); st.minute = maxMin; render(); });
-        on('#replay', 'click', () => {
-          if (st.playing) { stopReplay(); render(); return; }
-          st.minute = 1; st.playing = true;
-          st.timer = setInterval(() => { if (location.hash !== '#match/' + id || st.minute >= maxMin) { stopReplay(); if (location.hash === '#match/' + id) render(); return; } st.minute += 1; render(); }, 180);
-          render();
-        });
-        function stopReplay() { clearInterval(st.timer); st.playing = false; }
-      }
+        <div style="padding:10px 20px" class="scoreline"><a class="side" href="#team/${encodeURIComponent(f.home)}" style="color:var(--text)">${crest(f.home, 52)}${esc(T(f.home).name)}</a>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div class="bigscore">${center}</div>${tag}</div>
+          <a class="side" href="#team/${encodeURIComponent(f.away)}" style="color:var(--text)">${crest(f.away, 52)}${esc(T(f.away).name)}</a></div>
+        <main class="scroll">
+          <div class="list">${rows.map((r) => `<div class="setrow"><div class="grow"><span>${esc(r[1])}</span><span>${esc(r[0])}</span></div></div>`).join('')}</div>
+          <p class="note">Real data from football-data.org${Real.updated() ? ' · updated ' + timeAgo(Real.updated()) : ''}. The free plan doesn’t include goal scorers, lineups, ball tracking or heat maps.</p>
+        </main></div>`,
+      mount() { on('[data-bell]', 'click', (e, el) => toggleMatchAlert(el.dataset.bell)); }
     };
   };
 
@@ -497,14 +507,14 @@
     return {
       html: `<div class="screen">
         <header class="topbar">${backBtn('#home', 'Back to home')}<span class="title">My calendar</span><span class="spacer44"></span></header>
-        <main class="scroll">${demoBanner()}
+        <main class="scroll">
           <div class="chips">${p.teams.map((c) => `<button type="button" class="teamchip" data-team="${c}" aria-pressed="${!st.hidden[c]}">${crest(c, 28)}${esc(T(c).name)}</button>`).join('')}<a class="chip" href="#profile" style="display:flex;align-items:center;border-style:dashed;color:var(--muted)">+ Add team</a></div>
           <div class="seg"><button type="button" data-cmode="month" aria-pressed="${st.mode === 'month'}">Month</button><button type="button" data-cmode="week" aria-pressed="${st.mode === 'week'}">This matchweek</button></div>
           ${st.mode === 'month' ? `<div class="card cal"><div class="row between" style="padding:0 2px 10px"><button type="button" class="iconbtn" data-mon="-1" aria-label="Previous month">${icon('back', 18)}</button><div style="text-align:center"><b>${MONTHS[st.m]} ${st.y}</b><div class="tiny muted">${monthCount} matches</div></div><button type="button" class="iconbtn" data-mon="1" aria-label="Next month">${icon('chev', 18)}</button></div>
             <div class="calgrid">${'SMTWTFS'.split('').map((x) => `<span class="dow">${x}</span>`).join('')}${cells.join('')}</div></div>` : ''}
           <div class="row between"><b>${title}</b><span class="tiny muted">Your local time</span></div>
-          ${list.length ? `<div class="list">${list.map((f) => { const d = parseYmd(f.date); return `<div class="fx"><span class="d"><span class="tiny muted">${DOW[d.getDay()]}</span><b>${d.getDate()}</b></span><a href="#match/${f.id}" style="flex:1;color:var(--text)"><div style="font-weight:600">${esc(matchTitle(f))}</div><div class="small muted">${esc(f.league)} · ${f.status === 'upcoming' ? fmtTime(f.time) : f.status === 'live' ? 'LIVE' : 'FT ' + f.hs + '–' + f.as}</div></a>${f.status === 'upcoming' ? `<button type="button" class="iconbtn bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for ${esc(matchTitle(f))}">${icon('bell', 18)}</button>` : ''}</div>`; }).join('')}</div>`
-            : `<div class="card muted" style="padding:18px;text-align:center">No matches for your teams ${st.mode === 'month' ? 'this day' : 'this week'}.</div>`}
+          ${list.length ? `<div class="list">${list.map((f) => { const d = parseYmd(f.date); return `<div class="fx"><span class="d"><span class="tiny muted">${DOW[d.getDay()]}</span><b>${d.getDate()}</b></span><a href="#match/${f.id}" style="flex:1;color:var(--text)"><div style="font-weight:600">${esc(matchTitle(f))}</div><div class="small muted">${esc(f.league)} · ${resultText(f)}</div></a>${f.status === 'upcoming' ? `<button type="button" class="iconbtn bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for ${esc(matchTitle(f))}">${icon('bell', 18)}</button>` : ''}</div>`; }).join('')}</div>`
+            : (Real.state() !== 'ok' ? noDataCard() : !p.teams.length ? noDataCard('Add favorite teams in your profile to see their games here.') : `<div class="card muted" style="padding:18px;text-align:center">No matches for your teams ${st.mode === 'month' ? 'this day' : 'this week'}.</div>`)}
           <p class="note">Saved on your device · works offline</p>
         </main>${nav('')}</div>`,
       mount() {
@@ -533,8 +543,6 @@
         <header class="topbar">${backBtn('#home', 'Back to home')}<span class="title">Alerts</span><span class="spacer44"></span></header>
         <main class="scroll">
           <div class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px"><b>${statusCard[0]}</b><span class="small muted">${statusCard[1]}</span>${statusCard[2] ? `<button type="button" class="btn" id="notifBtn" data-act="${statusCard[3]}" style="height:44px">${statusCard[2]}</button>` : ''}</div>
-          <span class="label">How alerts look</span>
-          <div class="notif"><span class="ic" style="background:var(--accent)">${icon('ball', 20, 2.2)}</span><div style="flex:1"><div class="row between tiny muted"><span>Matchday 195</span><span>now</span></div><b class="small">GOAL! Arsenal 2 – 1 Chelsea (58')</b><div class="small muted">Ødegaard scores. Tap for the ball tracker.</div></div></div>
           <span class="label">Notify me about</span>
           <div class="list">${kinds.map((k) => setrow('k_' + k[0], a.kinds[k[0]], k[1], k[2])).join('')}</div>
           <span class="label">For these teams</span>
@@ -552,7 +560,7 @@
         });
         on('#notifBtn', 'click', async (e, el) => {
           if (el.dataset.act === 'ask') { try { await Notification.requestPermission(); } catch (er) { } render(); }
-          else { const ok = await sendNotification('GOAL! Arsenal 2 – 1 Chelsea (58\')', 'This is a test alert from Matchday 195.', '#alerts'); toast(ok ? 'Test alert sent' : 'Couldn’t send — check your notification settings'); }
+          else { const ok = await sendNotification('Test alert', 'This is a test alert from Matchday 195. Real alerts will show your teams\u2019 kickoffs.', '#alerts'); toast(ok ? 'Test alert sent' : 'Couldn’t send — check your notification settings'); }
         });
       }
     };
@@ -600,7 +608,6 @@
   };
 
   /* ----- Search: teams and tournaments ----- */
-  const fold = (t) => String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   const groupFor = (name) => D.TEAM_GROUPS[name] ? name : null;
   const tournamentById = (id) => D.TOURNAMENTS.find((t) => t.id === id);
   const tournamentForTeam = (t) => D.TOURNAMENTS.find((x) => x.name === t.league || x.name === t.group);
@@ -645,7 +652,7 @@
   /* ----- Team page ----- */
   function fixtureRows(list) {
     const a = getAlerts();
-    return list.map((f) => { const d = parseYmd(f.date); return `<div class="fx"><span class="d"><span class="tiny muted">${DOW[d.getDay()]}</span><b>${d.getDate()}</b></span><a href="#match/${f.id}" style="flex:1;color:var(--text)"><div style="font-weight:600">${esc(matchTitle(f))}</div><div class="small muted">${esc(f.league)} · ${f.status === 'upcoming' ? fmtTime(f.time) : f.status === 'live' ? liveLabel(f) : 'FT ' + f.hs + '–' + f.as}</div></a>${f.status === 'upcoming' ? `<button type="button" class="iconbtn bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for ${esc(matchTitle(f))}">${icon('bell', 18)}</button>` : ''}</div>`; }).join('');
+    return list.map((f) => { const d = parseYmd(f.date); return `<div class="fx"><span class="d"><span class="tiny muted">${DOW[d.getDay()]}</span><b>${d.getDate()}</b></span><a href="#match/${f.id}" style="flex:1;color:var(--text)"><div style="font-weight:600">${esc(matchTitle(f))}</div><div class="small muted">${esc(f.league)} · ${resultText(f)}</div></a>${f.status === 'upcoming' ? `<button type="button" class="iconbtn bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for ${esc(matchTitle(f))}">${icon('bell', 18)}</button>` : ''}</div>`; }).join('');
   }
   function newsRows(items) {
     return items.map((x) => `<a class="setrow" href="${esc(x.link)}" target="_blank" rel="noopener" style="color:var(--text);align-items:flex-start"><div class="grow"><span style="line-height:1.35">${esc(x.title)}</span><span>${esc(x.source)} · ${esc(timeAgo(x.published))}</span></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--accent)"><path d="M7 17L17 7M9 7h8v8"/></svg></a>`).join('');
@@ -657,6 +664,7 @@
     const fx = DataSource.fixtures().filter((f) => f.home === key || f.away === key).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const news = News.items().filter((x) => (x.teams || []).includes(key)).slice(0, 8);
     const sub = t.national ? 'National team' : key.startsWith('C-') ? 'My team' : (t.league || '');
+    const noGamesMsg = COVERED.has(t.league) || t.national ? 'No games for ' + esc(t.name) + ' in the last two weeks or the next two weeks.' : 'Games for ' + esc(t.name) + ' aren\u2019t included in the free data plan.';
     return {
       html: `<div class="screen">
         <header class="topbar">${backHere()}<span class="title">${esc(t.name)}</span><span class="spacer44"></span></header>
@@ -667,13 +675,13 @@
             <button type="button" class="btn ${following ? 'ghost' : ''}" id="follow" style="height:46px;max-width:240px">${following ? '★ Following' : '☆ Follow'}</button>
           </div>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Matches</span>
-            ${fx.length ? demoBanner() + `<div class="list">${fixtureRows(fx)}</div>` : `<div class="card small muted" style="padding:14px">No games to show yet. Real fixtures appear once the live data feed is connected.</div>`}</section>
+            ${fx.length ? `<div class="list">${fixtureRows(fx)}</div>` : noDataCard(Real.state() === 'ok' ? noGamesMsg : null)}</section>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Transfer headlines</span>
             ${news.length ? `<div class="list">${newsRows(news)}</div>` : `<div class="card small muted" style="padding:14px">No recent transfer headlines about ${esc(t.name)}.</div>`}</section>
         </main>${nav('')}</div>`,
       mount() {
         bindBack();
-        on('#follow', 'click', () => { const pr = getProfile(); if (pr.teams.includes(key)) pr.teams = pr.teams.filter((c) => c !== key); else pr.teams.push(key); saveProfile(pr); delete screens.profile.st; toast(pr.teams.includes(key) ? 'Following ' + t.name : 'Unfollowed ' + t.name); render(); });
+        on('#follow', 'click', () => { if (key.startsWith('FD-') && !extraTeams()[key]) rememberTeam(key, t.name, t.league); const pr = getProfile(); if (pr.teams.includes(key)) pr.teams = pr.teams.filter((c) => c !== key); else pr.teams.push(key); saveProfile(pr); delete screens.profile.st; toast(pr.teams.includes(key) ? 'Following ' + t.name : 'Unfollowed ' + t.name); render(); });
         on('[data-bell]', 'click', (e, el) => toggleMatchAlert(el.dataset.bell));
       }
     };
@@ -685,13 +693,17 @@
     if (!t) return { html: `<div class="screen"><header class="topbar">${backHere()}<span class="title">Tournament</span><span class="spacer44"></span></header><main class="scroll"><p class="muted">Tournament not found.</p></main></div>`, mount: bindBack };
     const g = groupFor(t.name); const teams = g ? D.TEAM_GROUPS[g] : (t.national ? D.TEAM_GROUPS['National teams'] : []);
     const fx = DataSource.fixtures().filter((f) => f.league === t.name).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const noGamesMsg = COVERED.has(t.name) ? 'No ' + esc(t.name) + ' games in the last two weeks or the next two weeks.' : esc(t.name) + ' isn\u2019t included in the free data plan, so there are no games to show.';
+    const table = TOUR_CODE[t.id] && Real.tables()[TOUR_CODE[t.id]];
+    const tableHtml = table ? `<section style="display:flex;flex-direction:column;gap:8px"><span class="label">Table</span><div class="card" style="overflow-x:auto"><table class="standings"><thead><tr><th>#</th><th style="text-align:left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody>${table.rows.map((r) => { const k = keyFor(r.team, TOUR_CODE[t.id], t.name); return `<tr><td>${r.pos}</td><td style="text-align:left"><a href="#team/${encodeURIComponent(k)}" class="row" style="gap:8px;color:var(--text)">${crest(k, 22)}<span>${esc(T(k).name)}</span></a></td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gd > 0 ? '+' + r.gd : r.gd}</td><td><b>${r.pts}</b></td></tr>`; }).join('')}</tbody></table></div></section>` : '';
     return {
       html: `<div class="screen">
         <header class="topbar">${backHere()}<span class="title">${esc(t.name)}</span><span class="spacer44"></span></header>
         <main class="scroll" style="gap:18px">
           <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px">${tIcon(t)}<div><h1 class="page" style="font-size:1.4em">${esc(t.name)}</h1><span class="small muted">${esc(t.type)} · ${esc(t.country)}</span></div></div>
+          ${tableHtml}
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Matches</span>
-            ${fx.length ? demoBanner() + `<div class="list">${fixtureRows(fx)}</div>` : `<div class="card small muted" style="padding:14px">No games to show yet. Real fixtures appear once the live data feed is connected.</div>`}</section>
+            ${fx.length ? `<div class="list">${fixtureRows(fx)}</div>` : noDataCard(Real.state() === 'ok' ? noGamesMsg : null)}</section>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">${g ? 'Teams this season (' + teams.length + ')' : t.national ? 'National teams' : 'Teams'}</span>
             ${teams.length ? `<div class="list">${teams.map((x) => `<a class="setrow" href="#team/${encodeURIComponent(x[0])}" style="color:var(--text)">${crest(x[0], 32)}<div class="grow"><span>${esc(x[1])}</span></div>${icon('chev', 18)}</a>`).join('')}</div>` : `<div class="card small muted" style="padding:14px">The team list for this tournament comes with the live data feed.</div>`}</section>
         </main>${nav('')}</div>`,
@@ -705,16 +717,16 @@
   screens.skills = function () {
     const st = screens.skills.st || (screens.skills.st = { cat: 'All' });
     const prog = getProg(); const all = DataSource.skills();
-    const last = all.find((s) => s.id === prog.last) || all[0]; const ls = prog.steps[last.id] || 0;
+    const started = !!prog.last; const last = all.find((s) => s.id === prog.last) || all[0]; const ls = prog.steps[last.id] || 0;
     const list = all.filter((s) => st.cat === 'All' || s.cat === st.cat);
     return {
       html: `<div class="screen">
         <header class="topbar"><span class="brand" style="font-size:1.6em">Skills</span><span class="small muted row" style="gap:6px">${icon('down', 14)}Saved offline</span></header>
         <main class="scroll">
           <a class="featured" href="#skill/${last.id}" style="display:flex;flex-direction:column;gap:10px">
-            <span class="label" style="color:var(--accent)">Continue learning</span><b class="display" style="font-size:1.3em">${esc(last.name)}</b>
-            <span class="small muted">Step ${ls + 1} of ${last.steps.length} · ${esc(last.steps[ls][0])}</span>
-            <div class="progress"><div style="width:${((ls + 1) / last.steps.length * 100).toFixed(0)}%"></div></div></a>
+            <span class="label" style="color:var(--accent)">${started ? 'Continue learning' : 'Start here'}</span><b class="display" style="font-size:1.3em">${esc(last.name)}</b>
+            <span class="small muted">${started ? 'Step ' + (ls + 1) + ' of ' + last.steps.length : last.steps.length + ' steps'} · ${esc(last.steps[ls][0])}</span>
+            <div class="progress"><div style="width:${started ? ((ls + 1) / last.steps.length * 100).toFixed(0) : 0}%"></div></div></a>
           <div class="chips">${['All', 'Shooting', 'Dribbling', 'Passing', 'First touch'].map((c) => `<button type="button" class="chip" data-cat="${c}" aria-pressed="${st.cat === c}">${c}</button>`).join('')}</div>
           <div class="skgrid">${list.map((s) => { const done = prog.done[s.id]; return `<a class="card skcard" href="#skill/${s.id}"><span class="ic" style="background:${CAT[s.cat][0]}">${icon(CAT[s.cat][1], 22, 2.2)}</span><b>${esc(s.name)}</b>
             <span class="row between tiny muted" style="margin-top:auto"><span class="lvl" style="color:${LVL[s.level]}">${s.level}</span><span>${done ? '✓ Done' : s.steps.length + ' steps'}</span></span></a>`; }).join('')}</div>
@@ -868,8 +880,8 @@
         <main class="scroll" style="gap:18px">
           <div class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px">
             <div class="row between tiny muted"><span>PREVIEW</span><span>${dark ? 'Dark' : 'Light'}${settings.mode === 'auto' ? ' · auto' : ''}</span></div>
-            <div class="row between"><b>Arsenal</b><b class="display" style="font-size:1.6em">2 – 1</b><b>Chelsea</b></div>
-            <div class="row between"><span class="live-pill">LIVE 67'</span><span class="form-dots">${[['W', 'win'], ['W', 'win'], ['L', 'loss'], ['D', 'draw']].map(([l, v]) => `<span style="background:${onWL('--' + v)};color:${v === 'draw' ? 'var(--text)' : 'var(--bg)'}">${l}</span>`).join('')}</span></div>
+            <div class="row between"><span class="small">Live badge</span><span class="small">Win · Win · Loss · Draw</span></div>
+            <div class="row between"><span class="live-pill">LIVE</span><span class="form-dots">${[['W', 'win'], ['W', 'win'], ['L', 'loss'], ['D', 'draw']].map(([l, v]) => `<span style="background:${onWL('--' + v)};color:${v === 'draw' ? 'var(--text)' : 'var(--bg)'}">${l}</span>`).join('')}</span></div>
           </div>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Appearance</span>
             <div class="seg">${[['light', 'Light'], ['dark', 'Dark'], ['auto', 'Auto']].map(([k, l]) => `<button type="button" data-smode="${k}" aria-pressed="${settings.mode === k}">${l}</button>`).join('')}</div>
@@ -881,7 +893,7 @@
               ${settings.cbOn ? `<div class="setrow"><div class="seg" style="flex:1">${[['rg', 'Red-green'], ['by', 'Blue-yellow'], ['mono', 'No color']].map(([k, l]) => `<button type="button" data-cb="${k}" aria-pressed="${settings.cbType === k}">${l}</button>`).join('')}</div></div>` : ''}
               <div class="setrow"><span style="flex:1;font-weight:600">Text size</span>${[0, 1, 2].map((z) => `<button type="button" class="chip" data-size="${z}" aria-pressed="${settings.size === z}" style="width:46px;padding:0;font-size:${[13, 16, 20][z]}px" aria-label="${['Small', 'Medium', 'Large'][z]} text">A</button>`).join('')}</div></div></section>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Updates & offline</span>
-            <div class="list"><div class="setrow"><div class="grow"><span>Refresh now</span><span>Last updated ${fmtClock(DataSource.lastUpdated())}</span></div><button type="button" class="btn" id="refreshBtn" style="width:auto;height:40px;padding:0 14px;font-size:.9em">${icon('refresh', 16)}Refresh</button></div>
+            <div class="list"><div class="setrow"><div class="grow"><span>Refresh now</span><span>${DataSource.lastUpdated() ? 'Scores updated ' + timeAgo(DataSource.lastUpdated().toISOString()) : 'Match data not connected yet'}</span></div><button type="button" class="btn" id="refreshBtn" style="width:auto;height:40px;padding:0 14px;font-size:.9em">${icon('refresh', 16)}Refresh</button></div>
               ${setrow('autoRefresh', settings.autoRefresh, 'Auto-refresh live scores', 'Every 30 seconds while the app is open')}
               <div class="setrow"><div class="grow"><span>Works offline</span><span>Skills, calendar and last scores are saved on this device</span></div><span style="color:var(--accent)">${icon('down', 20)}</span></div></div></section>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Account</span>
@@ -927,7 +939,7 @@
   setInterval(async () => {
     if (!settings.autoRefresh || !navigator.onLine || document.hidden || !sess.get()) return;
     const h = location.hash;
-    if (/^#(home|matches|match\/m1)?$/.test(h) || h === '') { await DataSource.refresh(); const sc = screens.match['match_m1']; if (!(sc && sc.playing) && !document.activeElement.matches('input,select,textarea')) render(); }
+    if (/^#(home|matches|calendar|match\/.+|team\/.+|league\/.+)?$/.test(h) || h === '') { await DataSource.refresh(); if (!document.activeElement.matches('input,select,textarea')) render(); }
   }, 30000);
 
   /* ---------- loading screen ---------- */
@@ -948,6 +960,7 @@
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
   }
   News.load().then(() => { if (/^#(home|transfers)?$/.test(location.hash)) render(); });
+  Real.load().then(() => { if (sess.get() && !document.activeElement.matches('input,select,textarea')) render(); });
   if (sess.get()) { render(); showLoading(() => {}); }
   else render();
   checkReminders();

@@ -1,6 +1,5 @@
-/* Matchday — sample data.
-   Everything here is demo content until a live data feed is connected.
-   Swap the functions in DataSource (app.js) to load real data later. */
+/* Matchday 195 — static app data: teams, leagues, tournaments and skills tutorials.
+   Match fixtures, scores and tables are real and come from football-data.org (see app.js: Real). */
 
 window.MD_DATA = (function () {
   // Teams by league (2026–27 club lists). [key, name, color, other names used in news headlines]
@@ -276,6 +275,9 @@ window.MD_DATA = (function () {
     { id: 'SA', name: 'Serie A', country: 'Italy' },
     { id: 'BL', name: 'Bundesliga', country: 'Germany' },
     { id: 'L1', name: 'Ligue 1', country: 'France' },
+    { id: 'ELC', name: 'Championship', country: 'England' },
+    { id: 'DED', name: 'Eredivisie', country: 'Netherlands' },
+    { id: 'PPL', name: 'Primeira Liga', country: 'Portugal' },
     { id: 'MLS', name: 'MLS', country: 'USA' },
     { id: 'UCL', name: 'Champions League', country: 'Europe' },
     { id: 'MX', name: 'Liga MX', country: 'Mexico' },
@@ -300,52 +302,7 @@ window.MD_DATA = (function () {
   ];
   const TOURNAMENTS = LEAGUES.map((l) => Object.assign({ type: l.id === 'UCL' ? 'Cup' : 'League' }, l)).concat(CUPS.map((c) => Object.assign({ type: c.national ? 'National teams' : 'Cup' }, c)));
 
-  // Fixtures. date = 'YYYY-MM-DD', time = local 24h 'HH:MM'.
-  // Live / full-time status is worked out from the real clock in app.js.
-  const FIXTURES = [
-    { id: 'm1', league: 'Premier League', date: '2026-11-05', time: '14:00', home: 'ARS', away: 'CHE', status: 'live', minute: 67, hs: 2, as: 1, featured: true },
-    { id: 'm2', league: 'Premier League', date: '2026-11-05', time: '15:00', home: 'LIV', away: 'MCI', status: 'upcoming' },
-    { id: 'm3', league: 'La Liga', date: '2026-11-05', time: '12:00', home: 'BAR', away: 'SEV', status: 'ft', hs: 3, as: 0 },
-    { id: 'm4', league: 'La Liga', date: '2026-11-05', time: '15:00', home: 'RMA', away: 'VAL', status: 'upcoming' },
-    { id: 'm5', league: 'Serie A', date: '2026-11-05', time: '14:45', home: 'INT', away: 'JUV', status: 'live', minute: 54, hs: 1, as: 1 },
-    { id: 'm6', league: 'Bundesliga', date: '2026-11-05', time: '12:30', home: 'BAY', away: 'BVB', status: 'ft', hs: 2, as: 2 },
-    { id: 'm7', league: 'MLS', date: '2026-11-05', time: '19:30', home: 'MIA', away: 'LAG', status: 'upcoming' },
-    { id: 'm8', league: 'Champions League', date: '2026-11-05', time: '15:00', home: 'BRU', away: 'BAR', status: 'upcoming' },
-    { id: 'm9', league: 'Liga MX', date: '2026-11-05', time: '22:00', home: 'AME', away: 'CHV', status: 'upcoming' },
-    { id: 'm10', league: 'Brasileirão', date: '2026-11-05', time: '18:00', home: 'FLA', away: 'PAL', status: 'upcoming' },
-    { id: 'f1', league: 'La Liga', date: '2026-11-01', time: '10:15', home: 'BAR', away: 'ELC', status: 'ft', hs: 4, as: 1 },
-    { id: 'f2', league: 'Premier League', date: '2026-11-08', time: '12:30', home: 'SUN', away: 'ARS', status: 'upcoming' },
-    { id: 'f3', league: 'La Liga', date: '2026-11-08', time: '15:00', home: 'BAR', away: 'CEL', status: 'upcoming' },
-    { id: 'f4', league: 'MLS', date: '2026-11-09', time: '20:00', home: 'MIA', away: 'NSH', status: 'upcoming' },
-    { id: 'f5', league: 'MLS', date: '2026-11-15', time: '19:30', home: 'MIA', away: 'ORL', status: 'upcoming' },
-    { id: 'f6', league: 'Premier League', date: '2026-11-22', time: '11:30', home: 'ARS', away: 'TOT', status: 'upcoming' },
-    { id: 'f7', league: 'La Liga', date: '2026-11-23', time: '10:00', home: 'BAR', away: 'ATH', status: 'upcoming' },
-    { id: 'f8', league: 'Champions League', date: '2026-11-26', time: '15:00', home: 'ARS', away: 'BAY', status: 'upcoming' },
-    { id: 'f9', league: 'Premier League', date: '2026-11-29', time: '11:30', home: 'CHE', away: 'ARS', status: 'upcoming' },
-    { id: 'f10', league: 'La Liga', date: '2026-11-29', time: '08:00', home: 'BAR', away: 'ALA', status: 'upcoming' },
-    { id: 'f11', league: 'Premier League', date: '2026-12-03', time: '14:30', home: 'ARS', away: 'LIV', status: 'upcoming' },
-    { id: 'f12', league: 'La Liga', date: '2026-12-06', time: '15:00', home: 'RMA', away: 'BAR', status: 'upcoming' },
-    { id: 'f13', league: 'Premier League', date: '2026-12-13', time: '10:00', home: 'MCI', away: 'ARS', status: 'upcoming' }
-  ];
 
-  // Match detail for the featured live match.
-  const MATCH_DETAIL = {
-    m1: {
-      venue: 'Emirates Stadium',
-      events: [
-        { min: 12, type: 'goal', team: 'ARS', title: 'Goal — Saka', sub: 'Assist: Rice' },
-        { min: 31, type: 'goal', team: 'CHE', title: 'Goal — Palmer', sub: 'Penalty' },
-        { min: 40, type: 'yellow', team: 'CHE', title: 'Yellow card — Caicedo', sub: 'Foul' },
-        { min: 46, type: 'sub', team: 'CHE', title: 'Substitution', sub: 'Nkunku on for Jackson' },
-        { min: 58, type: 'goal', team: 'ARS', title: 'Goal — Ødegaard', sub: 'Assist: Saka' }
-      ],
-      players: [
-        { name: 'Saka', role: 'ARS · RW', spots: [[80, 22, 140, .85], [62, 18, 110, .6], [88, 36, 90, .7], [45, 25, 90, .35], [70, 10, 80, .5]], stats: [['Touches', '48'], ['Distance', '8.1 km'], ['Shots', '3']] },
-        { name: 'Ødegaard', role: 'ARS · CM', spots: [[55, 45, 150, .8], [68, 40, 120, .7], [42, 55, 100, .45], [75, 60, 90, .5], [60, 30, 90, .4]], stats: [['Touches', '61'], ['Distance', '9.4 km'], ['Passes', '44']] },
-        { name: 'Palmer', role: 'CHE · AM', spots: [[30, 50, 140, .85], [38, 70, 110, .6], [22, 40, 100, .65], [50, 60, 90, .35], [18, 62, 80, .5]], stats: [['Touches', '39'], ['Distance', '7.6 km'], ['Shots', '2']] }
-      ]
-    }
-  };
 
 
   // Skills tutorials: each step = title, body, tip, drill.
@@ -457,20 +414,6 @@ window.MD_DATA = (function () {
     ]}
   ];
 
-  // Goal minutes for sample games: [minute, 'H' home / 'A' away]. Scores build up live from these.
-  const GOALS = {
-    m1: [[12, 'H'], [31, 'A'], [58, 'H']],
-    m2: [[23, 'A'], [77, 'H']],
-    m3: [[9, 'H'], [44, 'H'], [71, 'H']],
-    m4: [[35, 'H'], [88, 'H']],
-    m5: [[20, 'A'], [49, 'H']],
-    m6: [[15, 'H'], [38, 'A'], [62, 'A'], [84, 'H']],
-    m7: [[11, 'H'], [40, 'A'], [66, 'H'], [90, 'H']],
-    m8: [[27, 'A'], [55, 'H'], [79, 'A']],
-    m9: [],
-    m10: [[30, 'H'], [52, 'A'], [86, 'H']],
-    f1: [[4, 'H'], [29, 'H'], [51, 'A'], [63, 'H'], [80, 'H']]
-  };
 
-  return { TEAMS, TEAM_GROUPS, LEAGUES, TOURNAMENTS, FIXTURES, MATCH_DETAIL, SKILLS, GOALS };
+  return { TEAMS, TEAM_GROUPS, LEAGUES, TOURNAMENTS, SKILLS };
 })();

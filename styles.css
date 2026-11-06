@@ -234,3 +234,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } .bar.run > div { animation-duration: 3.5s !important; } }
 .demo { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 12px; background: #FFD23F; color: #1A1400; font-size: .85em; line-height: 1.35; }
 .demo b { font-size: .95em; letter-spacing: .6px; }
+.standings { width: 100%; border-collapse: collapse; font-size: .85em; }
+.standings th, .standings td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.standings th { color: var(--muted); font-weight: 600; font-size: .9em; }
+.standings tr:last-child td { border-bottom: 0; }
