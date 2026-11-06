@@ -15,6 +15,7 @@ Every league, every match. A soccer app that installs on your phone and works of
 - **Transfer news**: all teams or my teams, done deals / rumours / loans
 - **Skills**: 14 step-by-step tutorials with coach tips and practice drills
 - **Profile**: photo or avatar color, name, bio, position, favorite teams and player
+- **Favorite teams**: every club in the app's 8 leagues, 59 national teams, 3,000+ more clubs from 100 countries, and any custom team you add
 - **Settings**: Light / Dark / Auto (by time of day), 5 themes, colorblind mode, text size, refresh
 
 ## Install on your phone
@@ -25,3 +26,7 @@ Every league, every match. A soccer app that installs on your phone and works of
 - Scores, fixtures and transfers are **sample data** until a live data feed is connected.
 - Accounts and profiles are saved on the device for now.
 - Works offline after the first visit.
+
+## Credits
+- World club list from [openfootball/clubs](https://github.com/openfootball/clubs) (public domain, CC0). Rebuild with `python scripts/build_world_clubs.py <path-to-clubs-repo> world-clubs.json`.
+- Transfer headlines link to their original publishers (Sky Sports, The Guardian).
