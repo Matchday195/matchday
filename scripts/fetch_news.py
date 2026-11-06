@@ -17,12 +17,14 @@ from html import unescape
 FEEDS = [
     ("Sky Sports", "https://www.skysports.com/rss/11095", False),  # football news feed; filtered to transfer stories
     ("The Guardian", "https://www.theguardian.com/football/transfer-window/rss", True),  # transfer-window section
+    ("The Guardian", "https://www.theguardian.com/football/rss", False),  # all football; filtered to transfer stories
 ]
 TRANSFER_WORDS = re.compile(
-    r"transfer|sign(s|ed|ing)?\b|deal|loan|bid|move|join(s|ed)?\b|target|swoop|talks|fee|contract|rumou?r|gossip|window|agree",
+    r"transfer|\bsign(s|ed|ing)?\b|\bdeal\b|\bloan|\bbids?\b|\bjoin(s|ed)?\b|\btarget|swoop|\btalks\b|\bfee\b|contract|rumou?r|gossip|\bwindow\b|\bagree",
     re.I,
 )
 MAX_ITEMS = 60
+MAX_AGE_DAYS = 90
 
 # Team code -> words that identify the team in a headline (matches the app's team list).
 TEAMS = {
@@ -65,12 +67,14 @@ def parse(xml_bytes, source, transfer_feed):
         link = (it.findtext("link") or "").strip()
         if not title or not link.startswith("http"):
             continue
-        if not transfer_feed and not TRANSFER_WORDS.search(title + " " + link):
+        if not transfer_feed and not TRANSFER_WORDS.search(title):  # headline only: web addresses often say "transfer" on unrelated stories
             continue
         try:
             when = parsedate_to_datetime(it.findtext("pubDate")).astimezone(timezone.utc)
         except Exception:
             when = datetime.now(timezone.utc)
+        if (datetime.now(timezone.utc) - when).days > MAX_AGE_DAYS:
+            continue
         items.append({"title": title, "link": link, "source": source,
                       "published": when.strftime("%Y-%m-%dT%H:%M:%SZ"), "teams": teams_in(title)})
     return items
@@ -80,7 +84,7 @@ def main(out_path="news.json", local_files=None):
     all_items, sources_ok = [], []
     for i, (source, url, transfer_feed) in enumerate(FEEDS):
         try:
-            data = open(local_files[i], "rb").read() if local_files else fetch(url)
+            data = open(local_files[i], "rb").read() if local_files and i < len(local_files) else fetch(url)
             got = parse(data, source, transfer_feed)
             all_items += got
             sources_ok.append(source)
