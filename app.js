@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '1.0.0';
+  const APP_VERSION = '1.0.1';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -106,17 +106,36 @@
   /* ---------- data source (sample data now; swap for a live feed later) ---------- */
   const DataSource = (function () {
     const BASE = parseYmd('2026-11-05');
-    let startedAt = store.get('liveStart', null);
-    if (!startedAt || Date.now() - startedAt > 3 * 3600 * 1000) { startedAt = Date.now(); store.set('liveStart', startedAt); }
     let lastUpdated = new Date();
     function dayShift() { const t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((t - BASE) / 86400000); }
+    // Goals for a fixture: [minute, 'H' or 'A']. Sample goals come from data.js; others are made up from the match id.
+    function goalsFor(f) {
+      if (D.GOALS && D.GOALS[f.id]) return D.GOALS[f.id];
+      let h = 0; for (const c of f.id + f.home + f.away) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+      const out = []; const n = h % 5;
+      for (let i = 0; i < n; i++) { h = (h * 1103515245 + 12345) >>> 0; out.push([5 + (h % 85), (h >> 8) % 2 ? 'H' : 'A']); }
+      return out.sort((a, b) => a[0] - b[0]);
+    }
+    // Status comes from the real clock: before kickoff = upcoming, then 1st half,
+    // half-time (15 min), 2nd half, full time about 110 minutes after kickoff.
     function fixtures() {
-      const shift = dayShift();
-      const extra = Math.floor((Date.now() - startedAt) / 60000);
+      const shift = dayShift(); const now = Date.now();
       return D.FIXTURES.map((f) => {
         const d = parseYmd(f.date); d.setDate(d.getDate() + shift);
         const g = Object.assign({}, f, { date: ymd(d) });
-        if (g.status === 'live') { g.minute = g.minute + extra; if (g.minute >= 90) { g.status = 'ft'; delete g.minute; } }
+        delete g.minute; delete g.hs; delete g.as; delete g.ht;
+        const [hh, mm] = f.time.split(':').map(Number); const ko = new Date(d); ko.setHours(hh, mm, 0, 0);
+        const el = Math.floor((now - ko) / 60000);
+        let minute;
+        if (el < 0) { g.status = 'upcoming'; return g; }
+        if (el < 45) minute = el + 1;
+        else if (el < 60) { minute = 45; g.ht = true; }
+        else if (el < 110) minute = Math.min(90, el - 14);
+        else minute = 90;
+        g.status = el < 110 ? 'live' : 'ft';
+        if (g.status === 'live') g.minute = minute;
+        const goals = goalsFor(f).filter((x) => x[0] <= minute);
+        g.hs = goals.filter((x) => x[1] === 'H').length; g.as = goals.filter((x) => x[1] === 'A').length;
         return g;
       });
     }
@@ -130,7 +149,8 @@
   const T = DataSource.team;
   const crest = (code, size) => { const t = T(code); return `<span class="crest" style="width:${size}px;height:${size}px;background:${t.color};font-size:${Math.round(size / 3.3)}px">${esc(code)}</span>`; };
   const matchTitle = (f) => T(f.home).name + ' vs ' + T(f.away).name;
-  function statusText(f) { return f.status === 'live' ? f.minute + "'" : f.status === 'ft' ? 'FT' : fmtTime(f.time); }
+  function statusText(f) { return f.status === 'live' ? (f.ht ? 'HT' : f.minute + "'") : f.status === 'ft' ? 'FT' : fmtTime(f.time); }
+  const liveLabel = (f) => f.ht ? 'HALF-TIME' : 'LIVE ' + f.minute + "'";
 
   /* ---------- app update + refresh ---------- */
   let swReg = null;
@@ -244,7 +264,7 @@
     const lines = (arr) => arr.map((l) => `<div class="ln"><b>${esc(l[0])}</b><span>${esc(l[1])}</span></div>`).join('');
     const cubes = [
       { id: 'live', t: 'Live Matches', s: live.length ? live.length + ' live now' : 'No live games', c: 'var(--c-live)', href: '#matches', ic: 'ball',
-        l: live.slice(0, 2).map((f) => [T(f.home).name + ' ' + f.hs + '–' + f.as + ' ' + T(f.away).name, 'LIVE ' + f.minute + "' · " + f.league]) },
+        l: live.slice(0, 2).map((f) => [T(f.home).name + ' ' + f.hs + '–' + f.as + ' ' + T(f.away).name, liveLabel(f) + ' · ' + f.league]) },
       { id: 'cal', t: 'My Calendar', s: nextDay ? 'Next: ' + DOW[nextDay.getDay()] + ', ' + MONTHS[nextDay.getMonth()].slice(0, 3) + ' ' + nextDay.getDate() : 'No games soon', c: 'var(--c-cal)', href: '#calendar', ic: 'cal',
         l: mine.slice(0, 2).map((f) => [matchTitle(f), DOW[parseYmd(f.date).getDay()] + ' · ' + fmtTime(f.time)]) },
       { id: 'tr', t: 'Transfer News', s: tr.length + ' stories', c: 'var(--c-tr)', href: '#transfers', ic: 'swap',
@@ -311,9 +331,9 @@
           <div class="daystrip">${days.map(({ o, d }) => `<button type="button" data-day="${o}" aria-pressed="${st.day === o}"><span>${o === 0 ? 'Today' : DOW[d.getDay()]}</span><span>${d.getDate()}</span></button>`).join('')}</div>
           <div class="chips">${['All'].concat(DataSource.leagues().map((l) => l.name)).map((l) => `<button type="button" class="chip" data-league="${esc(l)}" aria-pressed="${st.league === l}">${esc(l)}</button>`).join('')}</div>
           ${featured ? `<a class="featured" href="#match/${featured.id}">
-            <div class="row between small muted"><span>${esc(featured.league)}</span><span class="live-pill">LIVE ${featured.minute}'</span></div>
+            <div class="row between small muted"><span>${esc(featured.league)}</span><span class="live-pill">${liveLabel(featured)}</span></div>
             <div class="scoreline"><div class="side">${crest(featured.home, 48)}${esc(T(featured.home).name)}</div><div class="bigscore">${featured.hs} – ${featured.as}</div><div class="side">${crest(featured.away, 48)}${esc(T(featured.away).name)}</div></div>
-            <div class="row between small" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--accent);font-weight:700"><span>Ball tracker · Heat maps · Events</span>${icon('chev', 18)}</div></a>` : ''}
+            <div class="row between small" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--accent);font-weight:700"><span>${DataSource.detail(featured.id) ? 'Ball tracker · Heat maps · Events' : 'Match details'}</span>${icon('chev', 18)}</div></a>` : ''}
           ${groups.length ? groups.map((g) => `<section style="display:flex;flex-direction:column;gap:8px"><div class="row between"><b class="small">${esc(g.l.name)}</b><span class="tiny muted">${esc(g.l.country)}</span></div><div class="list">${g.m.map(row).join('')}</div></section>`).join('') : (featured ? '' : `<div class="card muted" style="padding:20px;text-align:center">No matches${q ? ' match your search' : ' on this day'}.</div>`)}
           <p class="note">Sample data · live feed coming next</p>
         </main>${nav('matches')}</div>`,
@@ -344,10 +364,11 @@
   screens.match = function (id) {
     const f = DataSource.fixtures().find((x) => x.id === id);
     if (!f) return { html: `<div class="screen"><header class="topbar">${backBtn('#matches')}<span class="title">Match</span><span class="spacer44"></span></header><main class="scroll"><p class="muted">Match not found.</p></main></div>` };
-    const det = DataSource.detail(id);
+    const det = f.status === 'upcoming' ? null : DataSource.detail(id);
     const key = 'match_' + id;
-    const st = screens.match[key] || (screens.match[key] = { tab: det ? 'ball' : 'events', minute: f.minute || 1, player: 0 });
+    const st = screens.match[key] || (screens.match[key] = { tab: det ? 'ball' : 'events', minute: f.minute || 90, player: 0 });
     const maxMin = f.status === 'live' ? f.minute : 90;
+    if (!det) st.tab = 'events';
     if (st.minute > maxMin) st.minute = maxMin;
     const a = getAlerts();
     const tabs = det ? [['ball', 'Ball tracker'], ['heat', 'Heat maps'], ['events', 'Events']] : [['events', 'Info']];
@@ -379,7 +400,7 @@
         <header class="topbar">${backBtn('#matches', 'Back to matches')}<span class="title small muted" style="font-family:Inter;font-weight:500">${esc(f.league)}${det ? ' · ' + esc(det.venue) : ''}</span>
           ${f.status === 'upcoming' ? `<button type="button" class="iconbtn bell" data-bell="${f.id}" aria-pressed="${!!a.matches[f.id]}" aria-label="Alerts for this match">${icon('bell')}</button>` : '<span class="spacer44"></span>'}</header>
         <div style="padding:10px 20px" class="scoreline"><div class="side">${crest(f.home, 52)}${esc(T(f.home).name)}</div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div class="bigscore">${f.hs != null ? f.hs + ' – ' + f.as : 'vs'}</div>${f.status === 'live' ? `<span class="live-pill">LIVE ${f.minute}'</span>` : `<span class="small muted">${f.status === 'ft' ? 'Full time' : fmtTime(f.time)}</span>`}</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div class="bigscore">${f.hs != null ? f.hs + ' – ' + f.as : 'vs'}</div>${f.status === 'live' ? `<span class="live-pill">${liveLabel(f)}</span>` : `<span class="small muted">${f.status === 'ft' ? 'Full time' : fmtTime(f.time)}</span>`}</div>
           <div class="side">${crest(f.away, 52)}${esc(T(f.away).name)}</div></div>
         <div style="padding:0 20px"><div class="seg">${tabs.map(([k, l]) => `<button type="button" data-tab="${k}" aria-pressed="${st.tab === k}">${l}</button>`).join('')}</div></div>
         <main class="scroll">${body}<p class="note">Sample match data</p></main></div>`,

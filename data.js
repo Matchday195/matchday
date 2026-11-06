@@ -45,7 +45,7 @@ window.MD_DATA = (function () {
   ];
 
   // Fixtures. date = 'YYYY-MM-DD', time = local 24h 'HH:MM'.
-  // status: 'live' (minute set), 'ft', or 'upcoming'.
+  // Live / full-time status is worked out from the real clock in app.js.
   const FIXTURES = [
     { id: 'm1', league: 'Premier League', date: '2026-11-05', time: '14:00', home: 'ARS', away: 'CHE', status: 'live', minute: 67, hs: 2, as: 1, featured: true },
     { id: 'm2', league: 'Premier League', date: '2026-11-05', time: '15:00', home: 'LIV', away: 'MCI', status: 'upcoming' },
@@ -209,5 +209,20 @@ window.MD_DATA = (function () {
     ]}
   ];
 
-  return { TEAMS, LEAGUES, FIXTURES, MATCH_DETAIL, TRANSFERS, SKILLS };
+  // Goal minutes for sample games: [minute, 'H' home / 'A' away]. Scores build up live from these.
+  const GOALS = {
+    m1: [[12, 'H'], [31, 'A'], [58, 'H']],
+    m2: [[23, 'A'], [77, 'H']],
+    m3: [[9, 'H'], [44, 'H'], [71, 'H']],
+    m4: [[35, 'H'], [88, 'H']],
+    m5: [[20, 'A'], [49, 'H']],
+    m6: [[15, 'H'], [38, 'A'], [62, 'A'], [84, 'H']],
+    m7: [[11, 'H'], [40, 'A'], [66, 'H'], [90, 'H']],
+    m8: [[27, 'A'], [55, 'H'], [79, 'A']],
+    m9: [],
+    m10: [[30, 'H'], [52, 'A'], [86, 'H']],
+    f1: [[4, 'H'], [29, 'H'], [51, 'A'], [63, 'H'], [80, 'H']]
+  };
+
+  return { TEAMS, LEAGUES, FIXTURES, MATCH_DETAIL, TRANSFERS, SKILLS, GOALS };
 })();
