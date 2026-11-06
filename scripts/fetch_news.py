@@ -26,16 +26,21 @@ TRANSFER_WORDS = re.compile(
 MAX_ITEMS = 60
 MAX_AGE_DAYS = 90
 
-# Team code -> words that identify the team in a headline (matches the app's team list).
-TEAMS = {
-    "ARS": ["Arsenal"], "CHE": ["Chelsea"], "LIV": ["Liverpool"], "MCI": ["Man City", "Manchester City"],
-    "SUN": ["Sunderland"], "TOT": ["Tottenham", "Spurs"], "BAR": ["Barcelona", "Barca", "Barça"],
-    "SEV": ["Sevilla"], "RMA": ["Real Madrid"], "VAL": ["Valencia"], "CEL": ["Celta"], "ATH": ["Athletic Club", "Athletic Bilbao"],
-    "ELC": ["Elche"], "ALA": ["Alaves", "Alavés"], "INT": ["Inter Milan", "Internazionale"], "JUV": ["Juventus"],
-    "BAY": ["Bayern"], "BVB": ["Dortmund"], "MIA": ["Inter Miami"], "LAG": ["LA Galaxy"], "NSH": ["Nashville"],
-    "ORL": ["Orlando City"], "BRU": ["Club Brugge"], "AME": ["Club America", "Club América"], "CHV": ["Chivas"],
-    "FLA": ["Flamengo"], "PAL": ["Palmeiras"],
-}
+# Team code -> words that identify the team in a headline. Read from the app's own team list in data.js.
+def load_teams():
+    import os
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data.js")
+    text = open(path, encoding="utf-8").read()
+    teams = {}
+    for m in re.finditer(r'\["([^"]+)", "([^"]+)", "#[0-9A-Fa-f]{6}"(?:, "([^"]*)")?\]', text):
+        key, name, aliases = m.group(1), m.group(2), m.group(3)
+        teams[key] = [name] + (aliases.split("|") if aliases else [])
+    return teams
+
+
+TEAMS = load_teams()
+# Names that are also everyday words or used for several teams: only match the longer aliases.
+AMBIGUOUS = {"Nice", "Inter", "America", "América", "Santos", "Lens", "Atlas", "Remo", "Como", "Roma", "Parma", "Brest", "Lyon", "Monaco", "Celta"}
 
 
 def fetch(url):
@@ -52,10 +57,15 @@ def clean(text):
 def teams_in(title):
     found = []
     for code, names in TEAMS.items():
-        if any(re.search(r"(?<![A-Za-z])" + re.escape(n) + r"(?![A-Za-z])", title, re.I) for n in names):
-            if code == "INT" and re.search(r"Inter Miami", title, re.I) and not re.search(r"Inter Milan|Internazionale", title, re.I):
+        for n in names:
+            if n in AMBIGUOUS and n not in ("Roma", "Lyon", "Monaco", "Parma", "Como", "Brest", "Lens", "Celta"):
                 continue
-            found.append(code)
+            if re.search(r"(?<![A-Za-z])" + re.escape(n) + r"(?![A-Za-z])", title, re.I):
+                found.append(code)
+                break
+    # "Inter Miami" is not Inter Milan
+    if "INT" in found and re.search(r"Inter Miami", title, re.I) and not re.search(r"Inter Milan|Internazionale", title, re.I):
+        found.remove("INT")
     return found
 
 

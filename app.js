@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.2.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -140,7 +140,7 @@
       });
     }
     return {
-      fixtures, team: (c) => D.TEAMS[c] || { name: c, color: '#777' },
+      fixtures, team: (c) => D.TEAMS[c] || { name: c, color: '#777', short: c, league: '' },
       detail: (id) => D.MATCH_DETAIL[id] || null, skills: () => D.SKILLS, leagues: () => D.LEAGUES,
       lastUpdated: () => lastUpdated,
       refresh() { return new Promise((res) => setTimeout(() => { lastUpdated = new Date(); store.set('lastUpdated', lastUpdated.getTime()); res(); }, 700)); }
@@ -172,7 +172,7 @@
     const h = Math.round(m / 60); if (h < 24) return h + 'h ago';
     const d = Math.round(h / 24); return d + (d === 1 ? ' day ago' : ' days ago');
   }
-  const crest = (code, size) => { const t = T(code); return `<span class="crest" style="width:${size}px;height:${size}px;background:${t.color};font-size:${Math.round(size / 3.3)}px">${esc(code)}</span>`; };
+  const crest = (code, size) => { const t = T(code); const sh = t.short || code; return `<span class="crest" style="width:${size}px;height:${size}px;background:${t.color};font-size:${Math.round(size / (sh.length > 3 ? 4.2 : 3.3))}px">${esc(sh)}</span>`; };
   const matchTitle = (f) => T(f.home).name + ' vs ' + T(f.away).name;
   function statusText(f) { return f.status === 'live' ? (f.ht ? 'HT' : f.minute + "'") : f.status === 'ft' ? 'FT' : fmtTime(f.time); }
   const liveLabel = (f) => f.ht ? 'HALF-TIME' : 'LIVE ' + f.minute + "'";
@@ -642,7 +642,6 @@
     if (!st.p) st.p = getProfile();
     const p = st.p; const s = sess.get() || {};
     const colors = ['#B6F23A', '#5AA9FF', '#FFB547', '#C9A7FF', '#FF8FB1', '#5EE0C1'];
-    const addable = Object.keys(D.TEAMS).filter((c) => !p.teams.includes(c)).sort((a, b) => T(a).name.localeCompare(T(b).name));
     return {
       html: `<div class="screen">
         <header class="topbar">${backBtn('#home', 'Back to home')}<span class="title">Edit profile</span><a class="iconbtn" href="#settings" aria-label="Settings">${icon('gear')}</a></header>
@@ -657,7 +656,12 @@
           <div style="display:flex;flex-direction:column;gap:8px"><span class="small muted" style="font-weight:600">Position I play</span><div class="seg">${['GK', 'DEF', 'MID', 'FWD'].map((x) => `<button type="button" data-pos="${x}" aria-pressed="${p.pos === x}">${x}</button>`).join('')}</div></div>
           <div style="display:flex;flex-direction:column;gap:8px"><span class="small muted" style="font-weight:600">Favorite teams</span>
             <div class="list">${p.teams.map((c) => `<div class="setrow">${crest(c, 30)}<div class="grow"><span>${esc(T(c).name)}</span><span>${esc(T(c).league)}</span></div><button type="button" class="iconbtn" data-rm="${c}" aria-label="Remove ${esc(T(c).name)}" style="background:transparent;border:0">${icon('x', 16, 2.5)}</button></div>`).join('') || '<div class="setrow muted">No teams yet.</div>'}</div>
-            <label class="field"><span class="sr">Add a team</span><select id="addTeam"><option value="">+ Add a team…</option>${addable.map((c) => `<option value="${c}">${esc(T(c).name)} (${esc(T(c).league)})</option>`).join('')}</select></label></div>
+            <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:10px">
+              <b class="small">Add teams</b>
+              <label class="search">${icon('search', 18)}<input id="teamQ" type="search" placeholder="Search clubs or countries" aria-label="Search clubs or countries" value="${esc(st.q || '')}"></label>
+              <div class="chips">${['All'].concat(Object.keys(D.TEAM_GROUPS)).map((g) => `<button type="button" class="chip" data-group="${esc(g)}" aria-pressed="${(st.group || 'All') === g}">${esc(g)}</button>`).join('')}</div>
+              <div class="list" id="teamResults" style="max-height:340px;overflow-y:auto">${teamResults(p, st)}</div>
+            </div></div>
           <label class="field">Favorite player<input id="f_player" value="${esc(p.player)}" maxlength="40" placeholder="Who do you play like?"></label>
           <button type="button" class="btn" id="saveP">Save profile</button>
           <button type="button" class="btn ghost" id="logout" style="color:var(--danger)">Log out</button>
@@ -667,7 +671,10 @@
         on('[data-color]', 'click', (e, el) => { grab(); p.avatar = el.dataset.color; render(); });
         on('[data-pos]', 'click', (e, el) => { grab(); p.pos = el.dataset.pos; render(); });
         on('[data-rm]', 'click', (e, el) => { grab(); p.teams = p.teams.filter((c) => c !== el.dataset.rm); render(); });
-        on('#addTeam', 'change', (e) => { grab(); if (e.target.value) { p.teams.push(e.target.value); render(); } });
+        const bindAdd = () => qsa('#teamResults [data-add]').forEach((el) => el.addEventListener('click', () => { grab(); const k = el.dataset.add; if (!p.teams.includes(k)) p.teams.push(k); toast(T(k).name + ' added'); render(); }));
+        bindAdd();
+        on('[data-group]', 'click', (e, el) => { grab(); st.group = el.dataset.group; render(); });
+        on('#teamQ', 'input', (e) => { st.q = e.target.value; qs('#teamResults').innerHTML = teamResults(p, st); bindAdd(); });
         on('#rmPhoto', 'click', () => { grab(); p.photo = ''; render(); });
         on('#photo', 'change', (e) => {
           const file = e.target.files && e.target.files[0]; if (!file) return; grab();
@@ -682,6 +689,19 @@
       }
     };
   };
+  function teamResults(p, st) {
+    const q = (st.q || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const g = st.group || 'All';
+    const groups = g === 'All' ? Object.keys(D.TEAM_GROUPS) : [g];
+    const keys = [];
+    groups.forEach((grp) => D.TEAM_GROUPS[grp].forEach((t) => {
+      const hay = (t[1] + ' ' + (t[3] || '') + ' ' + t[0].replace(/^N-/, '') + ' ' + grp).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (!q || hay.includes(q)) keys.push(t[0]);
+    }));
+    if (!keys.length) return '<div class="setrow muted">No teams match that search.</div>';
+    return keys.map((k) => { const t = T(k); const have = p.teams.includes(k);
+      return `<div class="setrow">${crest(k, 30)}<div class="grow"><span>${esc(t.name)}</span><span>${esc(t.league)}</span></div>${have ? '<span class="small muted" style="padding:0 6px">Added ✓</span>' : `<button type="button" class="chip" data-add="${esc(k)}" aria-label="Add ${esc(t.name)}">+ Add</button>`}</div>`; }).join('');
+  }
   function logout() { sess.clear(); Object.keys(screens).forEach((k) => { delete screens[k].st; }); location.hash = '#login'; render(); }
 
   /* ----- Settings ----- */
