@@ -186,7 +186,7 @@ window.MD_DATA = (function () {
     ],
     "Other clubs": [
       ["BRU", "Club Brugge", "#0067CE"],
-      ["BEN", "Benfica", "#E83030"],
+      ["BEN", "Benfica", "#E83030", "SL Benfica"],
       ["FCP", "Porto", "#003893", "FC Porto"],
       ["SPO", "Sporting CP", "#008057", "Sporting Lisbon"],
       ["AJA", "Ajax", "#D2122E"],

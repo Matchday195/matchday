@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.0.0';
+  const APP_VERSION = '2.1.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -63,7 +63,7 @@
 
   /* ---------- user, profile, settings ---------- */
   const DEFAULT_SETTINGS = { mode: 'auto', theme: 'pitch', cbOn: false, cbType: 'rg', size: 1, darkStart: 19, darkEnd: 7, autoRefresh: true };
-  const DEFAULT_ALERTS = { kinds: { kick: true, line: true, goal: true, red: true, ht: false, ft: true }, muted: {}, matches: {} };
+  const DEFAULT_ALERTS = { kinds: { kick: true, goal: true, ht: true, ft: true }, muted: {}, matches: {} };
   let settings = Object.assign({}, DEFAULT_SETTINGS, store.get('settings', {}));
   const saveSettings = () => { store.set('settings', settings); applyTheme(); };
 
@@ -270,18 +270,57 @@
     try { new Notification(title, opts); return true; } catch (e) { return false; }
   }
   // While the app is open: kickoff reminders for matches you turned the bell on for.
-  function checkReminders() {
-    const a = getAlerts(); if (!a.kinds.kick) return;
-    const sent = store.get('sentReminders', {});
-    const now = Date.now();
-    DataSource.fixtures().forEach((f) => {
-      if (!a.matches[f.id] || f.status !== 'upcoming' || sent[f.id + f.date]) return;
-      const [h, m] = f.time.split(':').map(Number); const k = parseYmd(f.date); k.setHours(h, m, 0, 0);
-      const mins = (k - now) / 60000;
-      if (mins > 0 && mins <= 15) { sendNotification('Kickoff in ' + Math.ceil(mins) + ' min', matchTitle(f) + ' · ' + f.league, '#match/' + f.id); sent[f.id + f.date] = 1; store.set('sentReminders', sent); }
-    });
+  // Which matches should alert: games of followed teams (unless muted) or games with the bell on.
+  function wantsAlerts(f, a, p) {
+    if (a.matches[f.id]) return true;
+    return [f.home, f.away].some((k) => p.teams.includes(k) && !a.muted[k]);
   }
-  setInterval(checkReminders, 60000);
+  function logAlert(title, body, url) {
+    const log = store.get('alertLog_' + (currentUser() || 'guest'), []);
+    log.unshift({ title, body, url, at: Date.now() });
+    store.set('alertLog_' + (currentUser() || 'guest'), log.slice(0, 40));
+    sendNotification(title, body, url);
+    if (!document.hidden) toast(title + ' · ' + body);
+  }
+  // Compare the newest real data with what we saw last time and alert on changes.
+  function checkAlerts() {
+    if (Real.state() !== 'ok' || !sess.get()) return;
+    const a = getAlerts(); const p = getProfile(); const now = Date.now();
+    const snapKey = 'alertSnap_' + (currentUser() || 'guest');
+    const snap = store.get(snapKey, null); const next = {};
+    const sent = store.get('sentReminders', {});
+    DataSource.fixtures().forEach((f) => {
+      next[f.id] = [f.status, f.hs, f.as, f.ht ? 1 : 0];
+      if (!wantsAlerts(f, a, p)) return;
+      const title = matchTitle(f), url = '#match/' + f.id, score = T(f.home).name + ' ' + f.hs + '–' + f.as + ' ' + T(f.away).name;
+      if (f.status === 'upcoming' && a.kinds.kick && !sent[f.id]) {
+        const mins = ((f.kickoff ? f.kickoff.getTime() : now) - now) / 60000;
+        if (mins > 0 && mins <= 15) { sent[f.id] = 1; logAlert('Kickoff in ' + Math.ceil(mins) + ' min', title + ' · ' + f.league, url); }
+      }
+      const before = snap && snap[f.id];
+      if (!before) return; // first time we see this match: nothing to compare yet
+      const [ps, ph, pa, pht] = before;
+      if (ps === 'upcoming' && f.status === 'live' && a.kinds.kick) logAlert('Kickoff', title + ' has started · ' + f.league, url);
+      if ((f.status === 'live' || f.status === 'ft') && ph != null && (f.hs > ph || f.as > pa) && a.kinds.goal) {
+        const scorer = f.hs > ph ? T(f.home).name : T(f.away).name;
+        logAlert('GOAL! ' + scorer, score, url);
+      }
+      if (f.status === 'live' && f.ht && !pht && a.kinds.ht) logAlert('Half-time', score, url);
+      if (f.status === 'ft' && ps !== 'ft' && a.kinds.ft) logAlert('Full time', score, url);
+    });
+    store.set('sentReminders', sent);
+    store.set(snapKey, next);
+  }
+  // Check for new data every minute while the app is open (the data itself updates about every minute).
+  async function poll() {
+    if (!navigator.onLine || document.hidden || !sess.get()) return;
+    const before = Real.updated();
+    await Real.load(); await News.load();
+    checkAlerts();
+    if (Real.updated() !== before && /^#(home|matches|calendar|alerts|match\/.+|team\/.+|league\/.+)?$/.test(location.hash) && !document.activeElement.matches('input,select,textarea')) render();
+  }
+  setInterval(poll, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
 
   /* ---------- shared pieces ---------- */
   function nav(active) {
@@ -530,7 +569,8 @@
   /* ----- Alerts ----- */
   screens.alerts = function () {
     const a = getAlerts(); const p = getProfile(); const ns = notifyState();
-    const kinds = [['kick', 'Kickoff reminder', '15 minutes before the match'], ['line', 'Lineups announced', 'About an hour before kickoff'], ['goal', 'Goals', 'With scorer and live score'], ['red', 'Red cards & penalties', 'Big moments only'], ['ht', 'Half-time score', 'At the break'], ['ft', 'Full-time result', 'Final score']];
+    const kinds = [['kick', 'Kickoff', '15 minutes before and when the game starts'], ['goal', 'Goals', 'Every goal, with the new score'], ['ht', 'Half-time score', 'At the break'], ['ft', 'Full-time result', 'Final score']];
+    const log = store.get('alertLog_' + (currentUser() || 'guest'), []);
     const statusCard = {
       granted: ['Notifications are on', 'You’ll get alerts on this device.', 'Send a test alert', 'test'],
       default: ['Turn on notifications', 'Your phone will ask for permission.', 'Turn on', 'ask'],
@@ -547,9 +587,11 @@
           <div class="list">${kinds.map((k) => setrow('k_' + k[0], a.kinds[k[0]], k[1], k[2])).join('')}</div>
           <span class="label">For these teams</span>
           <div class="list">${p.teams.length ? p.teams.map((c) => `<div class="setrow">${crest(c, 30)}<div class="grow"><span>${esc(T(c).name)}</span></div>${switchBtn('t_' + c, !a.muted[c], 'Alerts for ' + T(c).name)}</div>`).join('') : '<div class="setrow muted">Add favorite teams in your profile.</div>'}</div>
+          <span class="label">Recent alerts</span>
+          ${log.length ? `<div class="list">${log.slice(0, 15).map((x) => `<a class="setrow" href="${esc(x.url || '#alerts')}" style="color:var(--text)"><div class="grow"><span>${esc(x.title)}</span><span>${esc(x.body)} · ${esc(timeAgo(new Date(x.at).toISOString()))}</span></div></a>`).join('')}</div>` : `<p class="small muted" style="margin:0">No alerts yet. They’ll appear here when your teams play.</p>`}
           <span class="label">Matches with the bell on (${mine.length})</span>
           ${mine.length ? `<div class="list">${mine.map((f) => `<a class="setrow" href="#match/${f.id}"><div class="grow"><span>${esc(matchTitle(f))}</span><span>${esc(f.league)} · ${f.date} · ${fmtTime(f.time)}</span></div>${icon('chev', 18)}</a>`).join('')}</div>` : '<p class="small muted" style="margin:0">Tap the bell next to any match to get its alerts.</p>'}
-          <p class="note">Right now alerts come while Matchday 195 is open or running in the background. Alerts when the app is fully closed need the live server, which comes with the live data feed.</p>
+          <p class="note">Alerts come from the real match data, which updates about every minute (free-plan scores can run a few minutes behind). They work while Matchday 195 is open or in the background; alerts with the app fully closed would need a push server. Lineups and cards aren’t in the free data plan.</p>
         </main>${nav('')}</div>`,
       mount() {
         on('[data-sw]', 'click', (e, el) => {
@@ -643,8 +685,10 @@
     const teams = [];
     Object.keys(D.TEAM_GROUPS).forEach((g) => D.TEAM_GROUPS[g].forEach((t) => { if (fold(t[1] + ' ' + (t[3] || '') + ' ' + t[0].replace(/^N-/, '')).includes(q)) teams.push(teamRow(t[0], t[1], T(t[0]).league)); }));
     const ex = extraTeams(); Object.keys(ex).forEach((k) => { if (k.startsWith('C-') && fold(ex[k].name).includes(q)) teams.push(teamRow(k, ex[k].name, ex[k].league)); });
+    Real.fixtures(); Object.keys(liveTeams).forEach((k) => { if (fold(liveTeams[k].name + ' ' + liveTeams[k].league).includes(q)) teams.push(teamRow(k, liveTeams[k].name, liveTeams[k].league)); });
     const world = []; const w = World.list();
-    if (w && q.length >= 2) for (let i = 0; i < w.length && world.length < 40; i++) if (fold(w[i][0] + ' ' + w[i][1]).includes(q)) { const key = 'W-' + slug(w[i][0] + '-' + w[i][1]); world.push(teamRow(key, w[i][0], w[i][1], `data-world="${esc(key)}" data-n="${esc(w[i][0])}" data-c="${esc(w[i][1])}"`, teamInfoFor(w[i][0], w[i][1]))); }
+    const shown = new Set(); Object.keys(liveTeams).forEach((k) => shown.add(stripName(liveTeams[k].name))); Object.keys(D.TEAMS).forEach((k) => shown.add(stripName(D.TEAMS[k].name)));
+    if (w && q.length >= 2) for (let i = 0; i < w.length && world.length < 40; i++) if (fold(w[i][0] + ' ' + w[i][1]).includes(q) && !shown.has(stripName(w[i][0]))) { const key = 'W-' + slug(w[i][0] + '-' + w[i][1]); world.push(teamRow(key, w[i][0], w[i][1], `data-world="${esc(key)}" data-n="${esc(w[i][0])}" data-c="${esc(w[i][1])}"`, teamInfoFor(w[i][0], w[i][1]))); }
     const html = section('Tournaments', tours) + section('Teams', teams.slice(0, 60)) + section('More clubs worldwide', world) + (q.length >= 2 && !w ? '<p class="note">Loading more clubs…</p>' : '');
     return html || `<div class="card muted" style="padding:18px;text-align:center">Nothing found for “${esc(raw.trim())}”. You can add any team as a favorite in your profile.</div>`;
   }
@@ -810,8 +854,9 @@
         const grab = () => { ['name', 'username', 'bio', 'player'].forEach((k) => { const el = qs('#f_' + k); if (el) p[k] = el.value; }); };
         on('[data-color]', 'click', (e, el) => { grab(); p.avatar = el.dataset.color; render(); });
         on('[data-pos]', 'click', (e, el) => { grab(); p.pos = el.dataset.pos; render(); });
-        on('[data-rm]', 'click', (e, el) => { grab(); p.teams = p.teams.filter((c) => c !== el.dataset.rm); render(); });
-        const addKey = (k) => { grab(); if (!p.teams.includes(k)) p.teams.push(k); toast(T(k).name + ' added'); render(); };
+        const saveTeams = () => { const saved = getProfile(); saved.teams = p.teams.slice(); saveProfile(saved); };
+        on('[data-rm]', 'click', (e, el) => { grab(); p.teams = p.teams.filter((c) => c !== el.dataset.rm); saveTeams(); toast(T(el.dataset.rm).name + ' removed'); render(); });
+        const addKey = (k) => { grab(); if (!p.teams.includes(k)) p.teams.push(k); saveTeams(); toast(T(k).name + ' added'); render(); };
         const bindAdd = () => {
           qsa('#teamResults [data-add]').forEach((el) => el.addEventListener('click', () => addKey(el.dataset.add)));
           qsa('#teamResults [data-addw]').forEach((el) => el.addEventListener('click', () => { rememberTeam(el.dataset.addw, el.dataset.n, el.dataset.c); addKey(el.dataset.addw); }));
@@ -849,6 +894,7 @@
         if (!q || hay.includes(q)) { out.push(row(t[0], t[1], T(t[0]).league, `data-add="${esc(t[0])}"`)); if (fold(t[1]) === q) exact = true; }
       }));
     }
+    if (g === 'All' && q) { Real.fixtures(); Object.keys(liveTeams).forEach((k) => { if (fold(liveTeams[k].name + ' ' + liveTeams[k].league).includes(q)) { out.push(row(k, liveTeams[k].name, liveTeams[k].league, `data-addw="${esc(k)}" data-n="${esc(liveTeams[k].name)}" data-c="${esc(liveTeams[k].league)}"`)); if (fold(liveTeams[k].name) === q) exact = true; } }); }
     if (g === 'All' || g === 'World clubs') {
       const w = World.list();
       if (q.length >= 2 && w) {
@@ -894,7 +940,7 @@
               <div class="setrow"><span style="flex:1;font-weight:600">Text size</span>${[0, 1, 2].map((z) => `<button type="button" class="chip" data-size="${z}" aria-pressed="${settings.size === z}" style="width:46px;padding:0;font-size:${[13, 16, 20][z]}px" aria-label="${['Small', 'Medium', 'Large'][z]} text">A</button>`).join('')}</div></div></section>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Updates & offline</span>
             <div class="list"><div class="setrow"><div class="grow"><span>Refresh now</span><span>${DataSource.lastUpdated() ? 'Scores updated ' + timeAgo(DataSource.lastUpdated().toISOString()) : 'Match data not connected yet'}</span></div><button type="button" class="btn" id="refreshBtn" style="width:auto;height:40px;padding:0 14px;font-size:.9em">${icon('refresh', 16)}Refresh</button></div>
-              ${setrow('autoRefresh', settings.autoRefresh, 'Auto-refresh live scores', 'Every 30 seconds while the app is open')}
+              <div class="setrow"><div class="grow"><span>Automatic updates</span><span>Checks for new scores every minute while the app is open</span></div></div>
               <div class="setrow"><div class="grow"><span>Works offline</span><span>Skills, calendar and last scores are saved on this device</span></div><span style="color:var(--accent)">${icon('down', 20)}</span></div></div></section>
           <section style="display:flex;flex-direction:column;gap:8px"><span class="label">Account</span>
             <div class="list"><a class="setrow" href="#profile"><span style="flex:1;font-weight:600">Edit profile</span>${icon('chev', 18)}</a><a class="setrow" href="#alerts"><span style="flex:1;font-weight:600">Notifications</span>${icon('chev', 18)}</a>
@@ -935,13 +981,6 @@
   window.addEventListener('online', render);
   window.addEventListener('offline', render);
 
-  // Auto-refresh while open (only re-render screens that show scores).
-  setInterval(async () => {
-    if (!settings.autoRefresh || !navigator.onLine || document.hidden || !sess.get()) return;
-    const h = location.hash;
-    if (/^#(home|matches|calendar|match\/.+|team\/.+|league\/.+)?$/.test(h) || h === '') { await DataSource.refresh(); if (!document.activeElement.matches('input,select,textarea')) render(); }
-  }, 30000);
-
   /* ---------- loading screen ---------- */
   function showLoading(done) {
     const el = document.createElement('div');
@@ -960,8 +999,7 @@
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
   }
   News.load().then(() => { if (/^#(home|transfers)?$/.test(location.hash)) render(); });
-  Real.load().then(() => { if (sess.get() && !document.activeElement.matches('input,select,textarea')) render(); });
+  Real.load().then(() => { checkAlerts(); if (sess.get() && !document.activeElement.matches('input,select,textarea')) render(); });
   if (sess.get()) { render(); showLoading(() => {}); }
   else render();
-  checkReminders();
 })();

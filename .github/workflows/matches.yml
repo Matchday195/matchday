@@ -1,11 +1,12 @@
 name: Update matches
 
-
 # Fetches real fixtures, scores and tables from football-data.org and saves them on the
-# separate "data" branch, so frequent score updates never rebuild the website itself.
+# separate "data" branch, so score updates never rebuild the website itself.
+# GitHub can only start a scheduled job every 5 minutes, so each run keeps going for about
+# 5 minutes and fetches once a minute (1 API call per minute; the free limit is 10).
 on:
   schedule:
-    - cron: "*/10 * * * *"   # about every 10 minutes (GitHub may run it a little later)
+    - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -21,28 +22,38 @@ concurrency:
 jobs:
   matches:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Get previous data
         run: |
           mkdir -p out
           if git fetch --depth 1 origin data 2>/dev/null; then
-            git show origin/data:standings.json > out/standings.json 2>/dev/null || rm -f out/standings.json
+            for f in matches.json standings.json; do git show "origin/data:$f" > "out/$f" 2>/dev/null || rm -f "out/$f"; done
           fi
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Fetch from football-data.org
+      - name: Fetch every minute for about 5 minutes
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-        run: python scripts/fetch_matches.py out
-      - name: Publish to the data branch
+          REPO_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
         run: |
-          cd out
-          git init -q -b data
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -q -m "Update matches"
-          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" data
+          publish() {
+            rm -rf pub && mkdir pub && cp out/*.json pub/ && cd pub
+            git init -q -b data
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A && git commit -q -m "Update matches"
+            git push -q --force "$REPO_URL" data || echo "push failed, will retry next minute"
+            cd ..
+          }
+          for i in 1 2 3 4 5; do
+            start=$(date +%s)
+            if [ "$i" = 1 ]; then python scripts/fetch_matches.py out; else python scripts/fetch_matches.py out --quick; fi
+            publish
+            if grep -q 'FOOTBALL_DATA_TOKEN secret is not set' out/status.json; then break; fi
+            [ "$i" = 5 ] && break
+            left=$(( 60 - ($(date +%s) - start) ))
+            if [ "$left" -gt 0 ]; then sleep "$left"; fi
+          done

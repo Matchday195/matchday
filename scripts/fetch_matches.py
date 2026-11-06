@@ -46,7 +46,7 @@ def write(path, data):
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def main(out):
+def main(out, quick=False):
     os.makedirs(out, exist_ok=True)
     now = datetime.now(timezone.utc)
     stamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -60,14 +60,24 @@ def main(out):
     try:
         today = now.date()
         matches = {}
-        # The API allows up to 10 days per request, so ask in three windows.
-        for a, b in ((-13, -4), (-3, 6), (7, 16)):
+        mp = os.path.join(out, "matches.json")
+        windows = ((-13, -4), (-3, 6), (7, 16))
+        if quick:
+            # Every-minute update: keep what we have and refresh only yesterday..tomorrow (1 call).
+            try:
+                for m in json.load(open(mp, encoding="utf-8"))["matches"]:
+                    matches[m["id"]] = m
+                windows = ((-1, 1),)
+            except Exception:
+                matches = {}  # nothing saved yet: do a full fetch
+        # The API allows up to 10 days per request.
+        for a, b in windows:
             d1, d2 = today + timedelta(days=a), today + timedelta(days=b)
             data = get(f"/matches?dateFrom={d1}&dateTo={d2}", token)
             for m in data.get("matches", []):
                 matches[m["id"]] = slim(m)
         items = sorted(matches.values(), key=lambda m: (m["utcDate"] or "", m["id"]))
-        write(os.path.join(out, "matches.json"), {"updated": stamp, "matches": items})
+        write(mp, {"updated": stamp, "matches": items})
         status["matches"] = len(items)
 
         # League tables: refresh at most once an hour.
@@ -78,8 +88,8 @@ def main(out):
         except Exception:
             pass
         fresh = old and (now - datetime.strptime(old["updated"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)) < timedelta(minutes=60)
-        if fresh:
-            status["tables"] = len(old.get("tables", {}))
+        if fresh or quick:
+            status["tables"] = len((old or {}).get("tables", {}))
         else:
             tables = dict((old or {}).get("tables", {}))
             for code in LEAGUE_CODES:
@@ -109,4 +119,5 @@ def main(out):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "data"))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    sys.exit(main(args[0] if args else "data", quick="--quick" in sys.argv))
