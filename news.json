@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-07T11:39:26Z",
+ "updated": "2026-11-07T12:49:42Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Transfer Centre LIVE! Gabriel gives interview ahead of Real Madrid move",
+   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
+   "source": "Sky Sports",
+   "published": "2026-11-07T11:42:00Z",
+   "teams": [
+    "RMA"
+   ]
+  },
   {
    "title": "Bellinghams celebrate ‘beautiful story’ as Jobe joins Jude in Tuchel’s England 2.0",
    "link": "https://www.theguardian.com/football/2026/nov/06/jude-jobe-bellingham-thomas-tuchel-england-croatia-spain-nations-league",
@@ -22,24 +31,6 @@
    "published": "2026-11-06T17:00:00Z",
    "teams": [
     "EVE"
-   ]
-  },
-  {
-   "title": "Jobe joins brother Jude with England to showcase his own talent",
-   "link": "https://www.skysports.com/football/news/11095/13608890/england-jobe-bellingham-has-the-chance-to-showcase-his-own-talent-alongside-brother-jude-in-thomas-tuchels-squad",
-   "source": "Sky Sports",
-   "published": "2026-11-06T14:24:00Z",
-   "teams": [
-    "N-ENG"
-   ]
-  },
-  {
-   "title": "Transfer Centre LIVE! Moyes discusses Grealish situation after Coventry win",
-   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
-   "source": "Sky Sports",
-   "published": "2026-11-05T17:15:00Z",
-   "teams": [
-    "COV"
    ]
   },
   {
