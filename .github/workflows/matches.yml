@@ -2,15 +2,17 @@ name: Update matches
 
 # Fetches real fixtures, scores and tables from football-data.org and saves them on the
 # separate "data" branch, so score updates never rebuild the website itself.
-# GitHub can only start a scheduled job every 5 minutes, so each run keeps going for about
-# 5 minutes and fetches once a minute (1 API call per minute; the free limit is 10).
+# GitHub starts scheduled jobs late (often 30-45 minutes apart), so a run does not stop
+# after a few minutes: while any match is live or about to start it keeps fetching once
+# a minute (up to ~5h45m, GitHub's job limit is 6h). With nothing on, it checks once and stops.
+# Uses 1 API call per minute (the free limit is 10).
 on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["scripts/fetch_matches.py", ".github/workflows/matches.yml"]
+    paths: ["scripts/fetch_matches.py", "scripts/keep_going.py", ".github/workflows/matches.yml"]
 
 permissions:
   contents: write
@@ -22,7 +24,7 @@ concurrency:
 jobs:
   matches:
     runs-on: ubuntu-latest
-    timeout-minutes: 9
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,7 +36,7 @@ jobs:
           if git fetch --depth 1 origin data 2>/dev/null; then
             for f in matches.json standings.json; do git show "origin/data:$f" > "out/$f" 2>/dev/null || rm -f "out/$f"; done
           fi
-      - name: Fetch every minute for about 5 minutes
+      - name: Fetch every minute while matches are on
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
           REPO_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
@@ -48,12 +50,23 @@ jobs:
             git push -q --force "$REPO_URL" data || echo "push failed, will retry next minute"
             cd ..
           }
-          for i in 1 2 3 4 5; do
+          began=$(date +%s)
+          last_full=0
+          i=0
+          while :; do
+            i=$((i + 1))
             start=$(date +%s)
-            if [ "$i" = 1 ]; then python scripts/fetch_matches.py out; else python scripts/fetch_matches.py out --quick; fi
+            # Full fetch (2 weeks back/ahead + tables) on the first pass and every 30 minutes; quick 1-call fetch otherwise.
+            if [ $((start - last_full)) -ge 1800 ]; then
+              python scripts/fetch_matches.py out; last_full=$start
+            else
+              python scripts/fetch_matches.py out --quick
+            fi
             publish
             if grep -q 'FOOTBALL_DATA_TOKEN secret is not set' out/status.json; then break; fi
-            [ "$i" = 5 ] && break
+            if ! python scripts/keep_going.py out/matches.json; then echo "No live or upcoming matches - stopping after $i fetches"; break; fi
+            if [ $(( $(date +%s) - began )) -ge 20700 ]; then echo "Reached 5h45m - the next scheduled run takes over"; break; fi
             left=$(( 60 - ($(date +%s) - start) ))
-            if [ "$left" -gt 0 ]; then sleep "$left"; fi
+            if [ "$left" -lt 7 ]; then left=7; fi  # stay under 10 calls a minute after a long full fetch
+            sleep "$left"
           done
