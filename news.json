@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-09T12:31:51Z",
+ "updated": "2026-11-09T13:48:53Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "'My will is to stay' - Alisson wants new Liverpool contract",
+   "link": "https://www.skysports.com/football/news/11095/13610181/alisson-liverpool-goalkeeper-wants-to-stay-at-anfield-beyond-contract-expiry-at-the-end-of-this-season",
+   "source": "Sky Sports",
+   "published": "2026-11-09T12:38:00Z",
+   "teams": [
+    "LIV"
+   ]
+  },
   {
    "title": "Crystal Palace poised to sack Pierre Sage and target Frank after Liverpool defeat",
    "link": "https://www.theguardian.com/football/2026/nov/08/crystal-palace-pierre-sage-thomas-frank-main-candidate-manager-selhurst-park",
@@ -23,15 +32,6 @@
    "published": "2026-11-08T14:13:00Z",
    "teams": [
     "ARS",
-    "LIV"
-   ]
-  },
-  {
-   "title": "Liverpool latest: Alisson says he wants to stay beyond end of contract",
-   "link": "https://www.skysports.com/football/live-blog/11095/13025501/liverpool-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
-   "source": "Sky Sports",
-   "published": "2026-11-07T09:07:00Z",
-   "teams": [
     "LIV"
    ]
   },
