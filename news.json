@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-10T12:25:33Z",
+ "updated": "2026-11-10T13:42:49Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Liverpool latest: Van Dijk 'not panicking' about new deal.",
+   "link": "https://www.skysports.com/football/live-blog/11095/13025501/liverpool-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+   "source": "Sky Sports",
+   "published": "2026-11-10T12:00:00Z",
+   "teams": [
+    "LIV"
+   ]
+  },
   {
    "title": "Rui Pinto’s lawyers in talks with UK authorities over cooperation deal for whistleblower",
    "link": "https://www.theguardian.com/football/2026/nov/10/rui-pinto-lawyers-talks-uk-authorities-cooperation-deal-whistleblower",
@@ -28,15 +37,6 @@
    "source": "Sky Sports",
    "published": "2026-11-10T09:00:00Z",
    "teams": []
-  },
-  {
-   "title": "Papers: Poch would consider PL return to join Man Utd",
-   "link": "https://www.skysports.com/football/news/11095/13610409/mauricio-pochettino-would-consider-manchester-united-job-if-michael-carrick-is-sacked-paper-talk",
-   "source": "Sky Sports",
-   "published": "2026-11-09T23:00:00Z",
-   "teams": [
-    "MUN"
-   ]
   },
   {
    "title": "'My will is to stay' - Alisson wants new Liverpool contract",
