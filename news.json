@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-10T14:56:12Z",
+ "updated": "2026-11-10T15:48:58Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -25,11 +25,13 @@
    ]
   },
   {
-   "title": "Rui Pinto’s lawyers in talks with UK authorities over cooperation deal for whistleblower",
+   "title": "Rui Pinto’s lawyers in talks with UK authorities over deal for Manchester City whistleblower",
    "link": "https://www.theguardian.com/football/2026/nov/10/rui-pinto-lawyers-talks-uk-authorities-cooperation-deal-whistleblower",
    "source": "The Guardian",
    "published": "2026-11-10T10:30:35Z",
-   "teams": []
+   "teams": [
+    "MCI"
+   ]
   },
   {
    "title": "Aston Villa latest: Lindelof agrees new contract",
