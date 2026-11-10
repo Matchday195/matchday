@@ -411,6 +411,43 @@ window.MD_DATA = (function () {
       ['Let the chest absorb it', 'As the ball hits, sink slightly and breathe out to soften the touch.', 'A stiff chest makes the ball bounce away.', 'Chest down 15 throws.'],
       ['Steer it down to your feet', 'Turn your shoulders slightly to direct the ball to your stronger foot.', 'Aim the drop where your next touch will be.', 'Chest the ball to your right foot 10 times, then left.'],
       ['Play your next move fast', 'Pass, shoot, or dribble right after the ball drops.', 'Control is only useful if you do something with it.', 'Chest and pass to a friend, 10 times.']
+    ]},
+    { id: 'rainbow', cat: 'Tricks', name: 'Rainbow flick', level: 'Advanced', steps: [
+      ['Set the ball between your feet', 'Stand still with the ball between your feet, a little in front of you. Your stronger foot is the one that will flick, so put it slightly ahead of the ball and your other foot just behind it.', 'Learn it standing still first. Doing it while running comes much later.', 'Set up the starting position 10 times without moving the ball, until it feels natural.'],
+      ['Trap the ball with your back foot', 'Press the inside of your back foot against the back of the ball. Your front foot stays just in front, with its heel close to the ball.', 'The ball should feel squeezed between your feet, not loose.', 'Hold the ball trapped between your feet for 5 seconds. 10 reps.'],
+      ['Roll the ball up your front leg', 'Use your back foot to drag the ball up the back of your front heel and onto your lower calf. Lift your front heel slightly so the ball has somewhere to sit.', 'Go slowly. If the ball falls off, your back foot is pushing forward instead of upward.', 'Roll the ball up onto your heel and let it drop. 15 reps.'],
+      ['Flick your heel up', 'As the ball reaches your calf, kick your front heel up behind you, toward your bum. The flick launches the ball up and over your head.', 'The flick is quick and sharp, like kicking yourself in the backside.', 'Practise the full move and let the ball land behind you. 15 attempts.'],
+      ['Lean forward so it goes over you', 'Bend forward a little at the waist as you flick. That lets the ball arc over your head and land in front of you.', 'Standing too upright makes the ball hit your back or head.', 'Try 15 rainbows and count how many land in front of you.'],
+      ['Chase it and control it', 'Once the ball goes over, run forward and take a touch before it bounces twice.', 'In a game, the trick is only worth it if you keep the ball after.', 'Rainbow then control with one touch. 10 attempts.']
+    ]},
+    { id: 'sombrero', cat: 'Tricks', name: 'Sombrero flick', level: 'Advanced', steps: [
+      ['Get comfortable lifting the ball', 'The sombrero starts with the ball in the air. First learn to pop the ball up off the ground: roll it back with your sole, slip your toes under it as it comes onto your foot, and lift.', 'If you can juggle 10 or more, you already have the touch you need.', 'Lift the ball off the ground and catch it. 20 reps.'],
+      ['Keep the ball at knee height', 'Juggle or pop the ball so it sits just in front of you, around knee height. This is your starting point.', 'Small, soft touches. A high, wild ball is hard to flick with control.', 'Keep the ball at knee height for 10 touches in a row.'],
+      ['Wait for the defender to close in', 'The flick works when a defender runs at you and is close. Let them come within about two steps before you flick.', 'If they are far away, they just back off and catch the ball when it lands.', 'With a friend or a tall cone, practise waiting until they are close. 10 reps.'],
+      ['Scoop it over their head', 'Get your laces under the ball and lift it with a short, gentle flick upward and slightly forward, so it goes over the defender\'s head.', 'Think "scoop", not "kick". Too much power sends it away from you.', 'Flick the ball over a tall cone or a bench. 15 attempts.'],
+      ['Spin around the defender', 'As soon as the ball goes up, run around the defender\'s side. They are facing the wrong way, so you get there first.', 'Go around the side the ball is drifting toward.', 'Flick over a cone, run around it and collect. 10 reps each side.'],
+      ['Control before it bounces twice', 'Meet the ball as it drops and cushion it with your foot or thigh, then keep playing.', 'Practise with both feet so defenders can\'t guess which side you\'ll go.', 'Full move: flick, spin, control. Count your successes out of 15 attempts.']
+    ]},
+    { id: 'roulette', cat: 'Tricks', name: 'Roulette (Maradona turn)', level: 'Intermediate', steps: [
+      ['Dribble toward the defender', 'Run with the ball under close control toward a defender or cone.', 'Keep the ball close: you need it right under you to spin.', 'Dribble at a cone and stop the ball beside it. 10 reps.'],
+      ['Stop the ball with your sole', 'Put the sole of your stronger foot on top of the ball to stop it, then plant that foot next to the ball.', 'Your body should be side-on to the defender now.', 'Sole-stop and plant 10 times.'],
+      ['Spin your back to the defender', 'Turn your body away from the defender, spinning on your planted foot.', 'Your back protects the ball while you turn.', 'Do the half-spin slowly 10 times each way.'],
+      ['Drag it with your other sole', 'Halfway through the spin, put the sole of your other foot on the ball and drag it with you as you finish the turn.', 'Two soles: one stops it, one drags it. The ball stays under you the whole time.', 'Full spin without a defender. 10 reps each way.'],
+      ['Burst away', 'After the turn, push the ball into space and accelerate past the defender.', 'The speed after the turn is what beats them.', 'Roulette at a cone, then sprint 5 steps. 10 reps.']
+    ]},
+    { id: 'rabona', cat: 'Tricks', name: 'Rabona', level: 'Advanced', steps: [
+      ['Know when to use it', 'A rabona is a pass or shot where your kicking leg crosses behind your standing leg. It is useful when the ball is on your weaker side but you want to use your stronger foot.', 'Use it to surprise defenders, not every time.', 'Watch where the ball sits on your weak side. Set it there 10 times.'],
+      ['Plant your standing foot past the ball', 'Approach at an angle and plant your standing foot just in front of and beside the ball.', 'Plant a little further ahead than for a normal kick.', 'Approach and plant 10 times without kicking.'],
+      ['Swing behind your standing leg', 'Bring your kicking leg around and behind your standing leg, so the foot reaches the ball from the other side.', 'Keep your balance by leaning slightly forward with your arms out.', 'Swing behind slowly and tap the ball. 10 reps.'],
+      ['Strike with the laces or the inside', 'Hit the ball with your laces for power or the inside of your foot for a pass or cross.', 'Start with short passes before trying shots.', 'Rabona pass to a wall from 5 steps. 15 attempts.'],
+      ['Build up the distance', 'Once it is accurate, move further back and add power.', 'Accuracy first, then power.', 'Rabona at a target from 10 steps. 15 attempts.']
+    ]},
+    { id: 'atw', cat: 'Tricks', name: 'Around the world', level: 'Advanced', steps: [
+      ['Juggle with control first', 'You need to keep the ball up with steady, low touches before learning this one.', 'Aim for 20 juggles in a row first.', 'Juggle and count your best streak. 10 attempts.'],
+      ['Pop the ball up a bit higher', 'Give the ball one touch that sends it a little higher than normal, to about chest height, with no spin.', 'A straight-up ball with no spin gives you time.', 'Pop the ball to chest height and catch it on your foot. 15 reps.'],
+      ['Circle your foot around the ball', 'As the ball rises, swing your foot around it in a full circle: from the inside, over the top, and back down on the outside.', 'Lead with your knee: lift the knee and let the foot follow around.', 'Do the circle without a ball, 10 times each foot.'],
+      ['Catch it on your foot', 'Finish the circle quickly and get your foot back under the ball to keep juggling.', 'Most fails come from circling too slowly. Lift it higher until the timing feels right.', 'Pop, circle, then try to keep juggling. 20 attempts.'],
+      ['Try it the other way', 'Once you can do it, try circling the other direction and with your weaker foot.', 'Each direction feels like a new trick at first.', 'Do 10 attempts each direction with each foot.']
     ]}
   ];
 

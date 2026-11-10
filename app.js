@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.2.0';
+  const APP_VERSION = '2.3.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -54,7 +54,7 @@
     swap: 'M4 8h14l-3-3M20 16H6l3 3', bell: 'M6 16V11a6 6 0 0112 0v5l2 2H4zM10 21h4', user: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c1.5-4 14.5-4 16 0',
     x: 'M6 6l12 12M18 6L6 18', clock: 'M12 5a8 8 0 100 16 8 8 0 000-16zM12 9v4l2.5 2M9 2h6', bulb: 'M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.6.6 1 1.5 1 2.5h6c0-1 .4-1.9 1-2.5A6 6 0 0012 3z',
     target: 'M12 4a8 8 0 100 16 8 8 0 000-16zM12 9a3 3 0 100 6 3 3 0 000-6z', shot: 'M7 12a4 4 0 100 8 4 4 0 000-8zM11 12l9-7M15 5h5v5',
-    dribble: 'M4 18c4 0 4-12 8-12s4 12 8 12', pass: 'M5 10a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM19 10a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM8 12h8M13 9l3 3-3 3',
+    dribble: 'M4 18c4 0 4-12 8-12s4 12 8 12', trick: 'M4 17a8 8 0 0116 0M10 19a2 2 0 104 0 2 2 0 00-4 0', pass: 'M5 10a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM19 10a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM8 12h8M13 9l3 3-3 3',
     touch: 'M12 3a4 4 0 100 8 4 4 0 000-8zM5 20c2-4 12-4 14 0M12 11v4', arrow: 'M5 12h14M13 6l6 6-6 6', down: 'M12 4v11M7 10l5 5 5-5M5 20h14',
     wifi: 'M2 9a15 15 0 0120 0M5 12.5a10 10 0 0114 0M8.5 16a5 5 0 017 0M12 19.5h.01'
   };
@@ -756,7 +756,7 @@
   };
 
   /* ----- Skills list ----- */
-  const CAT = { Shooting: ['var(--c-live)', 'shot'], Dribbling: ['var(--c-tr)', 'dribble'], Passing: ['var(--c-cal)', 'pass'], 'First touch': ['var(--c-sk)', 'touch'] };
+  const CAT = { Shooting: ['var(--c-live)', 'shot'], Dribbling: ['var(--c-tr)', 'dribble'], Passing: ['var(--c-cal)', 'pass'], 'First touch': ['var(--c-sk)', 'touch'], Tricks: ['var(--c-al)', 'trick'] };
   const LVL = { Beginner: 'var(--win)', Intermediate: 'var(--c-tr)', Advanced: 'var(--danger)' };
   screens.skills = function () {
     const st = screens.skills.st || (screens.skills.st = { cat: 'All' });
@@ -771,7 +771,7 @@
             <span class="label" style="color:var(--accent)">${started ? 'Continue learning' : 'Start here'}</span><b class="display" style="font-size:1.3em">${esc(last.name)}</b>
             <span class="small muted">${started ? 'Step ' + (ls + 1) + ' of ' + last.steps.length : last.steps.length + ' steps'} · ${esc(last.steps[ls][0])}</span>
             <div class="progress"><div style="width:${started ? ((ls + 1) / last.steps.length * 100).toFixed(0) : 0}%"></div></div></a>
-          <div class="chips">${['All', 'Shooting', 'Dribbling', 'Passing', 'First touch'].map((c) => `<button type="button" class="chip" data-cat="${c}" aria-pressed="${st.cat === c}">${c}</button>`).join('')}</div>
+          <div class="chips">${['All', 'Shooting', 'Dribbling', 'Passing', 'First touch', 'Tricks'].map((c) => `<button type="button" class="chip" data-cat="${c}" aria-pressed="${st.cat === c}">${c}</button>`).join('')}</div>
           <div class="skgrid">${list.map((s) => { const done = prog.done[s.id]; return `<a class="card skcard" href="#skill/${s.id}"><span class="ic" style="background:${CAT[s.cat][0]}">${icon(CAT[s.cat][1], 22, 2.2)}</span><b>${esc(s.name)}</b>
             <span class="row between tiny muted" style="margin-top:auto"><span class="lvl" style="color:${LVL[s.level]}">${s.level}</span><span>${done ? '✓ Done' : s.steps.length + ' steps'}</span></span></a>`; }).join('')}</div>
         </main>${nav('skills')}</div>`,
