@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-11T14:54:23Z",
+ "updated": "2026-11-11T15:52:26Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Kane targets biggest team prizes ahead of record-breaking England cap",
+   "link": "https://www.skysports.com/football/news/11095/13610856/england-harry-kane-targets-european-championships-world-cup-and-champions-league-to-add-biggest-team-prizes-to-ballon-dor",
+   "source": "Sky Sports",
+   "published": "2026-11-11T15:29:00Z",
+   "teams": [
+    "N-ENG"
+   ]
+  },
   {
    "title": "Manchester United reach framework deal with Pochettino before settling Carrick’s fate",
    "link": "https://www.theguardian.com/football/2026/nov/11/manchester-united-close-mauricio-pochettino-deal-michael-carrick",
@@ -51,13 +60,6 @@
    "teams": [
     "MCI"
    ]
-  },
-  {
-   "title": "Transfer Centre LIVE! What has Poch said about Premier League return?",
-   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
-   "source": "Sky Sports",
-   "published": "2026-11-10T09:00:00Z",
-   "teams": []
   },
   {
    "title": "Ten of the best-value deals from this summer’s transfer window",
