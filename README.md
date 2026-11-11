@@ -14,7 +14,7 @@ Every league, every match. A soccer app that installs on your phone and works of
 - **My calendar**: favorite teams by month or matchweek, with alert bells
 - **Alerts**: choose kickoff, lineups, goals, red cards, half-time, full-time
 - **Transfer news**: all teams or my teams, done deals / rumours / loans
-- **Skills**: 25 step-by-step tutorials, including tricks like the rainbow and sombrero flick, with coach tips and practice drills
+- **Skills**: 25 step-by-step tutorials, each with an animation,, including tricks like the rainbow and sombrero flick, with coach tips and practice drills
 - **Profile**: photo or avatar color, name, bio, position, favorite teams and player
 - **Favorite teams**: every club in the app's 8 leagues, 59 national teams, 3,000+ more clubs from 100 countries, and any custom team you add
 - **Settings**: Light / Dark / Auto (by time of day), 5 themes, colorblind mode, text size, refresh
