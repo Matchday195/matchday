@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.4.1';
+  const APP_VERSION = '2.5.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */

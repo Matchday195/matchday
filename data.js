@@ -412,6 +412,44 @@ window.MD_DATA = (function () {
       ['Steer it down to your feet', 'Turn your shoulders slightly to direct the ball to your stronger foot.', 'Aim the drop where your next touch will be.', 'Chest the ball to your right foot 10 times, then left.'],
       ['Play your next move fast', 'Pass, shoot, or dribble right after the ball drops.', 'Control is only useful if you do something with it.', 'Chest and pass to a friend, 10 times.']
     ]},
+    { id: 'sole', cat: 'First touch', name: 'Sole trap', level: 'Beginner', steps: [
+      ['Watch the ball roll in', 'Face the pass and keep your eyes on the ball as it comes along the ground.', 'Get in line with the ball early so you are not reaching for it.', 'Have a friend or a wall send you 10 passes. Just get in line each time.'],
+      ['Lift your foot, toes up', 'Raise your controlling foot a few centimetres off the ground with your toes pointing up and your heel low.', 'Your foot makes a little ramp. The ball rolls under the sole and stops.', 'Practise the foot shape without a ball. 10 reps each foot.'],
+      ['Press gently on top of the ball', 'As the ball arrives, put the sole of your foot on its top half and press down softly.', 'Press, don\'t stamp. Stamping makes the ball squirt away.', 'Stop 15 passes dead with your sole.'],
+      ['Roll it into your next move', 'Once it is stopped, roll the ball with your sole to the side or toward you to set up a pass or dribble.', 'A sole trap is slower than other touches, so use it when you have time or need to shield the ball.', 'Trap, roll to the side, pass back. 10 reps each foot.']
+    ]},
+    { id: 'thigh', cat: 'First touch', name: 'Thigh control', level: 'Beginner', steps: [
+      ['Judge the drop', 'Watch the ball as it drops and move so it will come down at about waist height in front of you.', 'Quick small steps help you get under it.', 'Toss the ball up and move under it 10 times.'],
+      ['Lift your thigh flat', 'Raise your controlling leg so your thigh is flat, like a table, about level with your hip.', 'A flat thigh makes the ball drop straight down. A slanted thigh bounces it away.', 'Hold the flat-thigh position for 5 seconds. 10 reps each leg.'],
+      ['Drop your thigh as it lands', 'As the ball touches your thigh, lower the leg a little to soften the contact.', 'Think of catching an egg. Give with it.', 'Toss and cushion on your thigh. 15 reps each leg.'],
+      ['Let it fall to your feet', 'The ball should drop just in front of you. Take a touch with your foot straight away.', 'Make your next touch quick, before a defender closes in.', 'Thigh control, then pass to a wall. 10 reps each leg.']
+    ]},
+    { id: 'halfturn', cat: 'First touch', name: 'Receiving on the half-turn', level: 'Intermediate', steps: [
+      ['Check your shoulder', 'Before the pass arrives, look over your shoulder to see where defenders and space are.', 'Good players look 2 or 3 times before the ball comes.', 'While passing with a friend, glance over your shoulder before every touch. 20 passes.'],
+      ['Open your body', 'Stand side-on, with your hips half-facing the passer and half-facing where you want to go.', 'Side-on means you can see the ball and the field at the same time.', 'Get into the side-on stance 10 times as a pass comes.'],
+      ['Receive on your back foot', 'Let the ball run across your body and control it with the foot furthest from the passer.', 'Your back foot lets the ball travel. You are already moving forward when you touch it.', 'Receive 15 passes on your back foot.'],
+      ['Push it forward with your first touch', 'Use your first touch to move the ball forward into space instead of stopping it.', 'Your first touch should take you past the first defender.', 'Receive and push forward, then pass. 10 reps each side.'],
+      ['Go straight into your next action', 'After the touch, play forward right away: dribble, pass or shoot.', 'Turning fast is what makes this touch dangerous.', 'Half-turn and shoot at a goal. 10 attempts.']
+    ]},
+    { id: 'outtouch', cat: 'First touch', name: 'Outside-foot first touch', level: 'Intermediate', steps: [
+      ['Know when to use it', 'An outside-foot touch moves the ball away from a defender on your inside, keeping your body between them and the ball.', 'It is great on the wing when a defender comes from inside.', 'Watch where the defender is before every pass. 10 reps.'],
+      ['Turn your toes in', 'Point your toes slightly inward so the outside of your foot faces the ball.', 'Keep your ankle relaxed, not stiff.', 'Practise the foot shape 10 times each foot.'],
+      ['Touch it into space', 'Let the ball hit the outside of your foot and guide it away from you at an angle, about one or two steps.', 'Soft contact. You want the ball close enough to reach next touch.', 'Receive and touch out into space. 15 reps each foot.'],
+      ['Follow the ball', 'Move with the ball straight after the touch so you are ready to play.', 'The touch and the first step should feel like one move.', 'Outside touch, then dribble to a cone. 10 reps each foot.']
+    ]},
+    { id: 'lacekill', cat: 'First touch', name: 'Killing a high ball on your laces', level: 'Advanced', steps: [
+      ['Track the ball early', 'Watch the high ball all the way from the kick and move to where it will drop.', 'The earlier you move, the calmer the touch.', 'Kick the ball high yourself and move under it. 10 reps.'],
+      ['Raise your foot to meet it', 'Lift your controlling foot, toes slightly up, so your laces face the dropping ball.', 'Meet it about knee height, not at the ground.', 'Toss the ball up and meet it with your laces. 10 reps each foot.'],
+      ['Drop your foot with the ball', 'Right as the ball touches your laces, lower your foot quickly toward the ground.', 'This is the secret: your foot moves down with the ball and takes away its speed.', 'Toss high and cushion it dead on your laces. 20 attempts.'],
+      ['Land it at your feet', 'The ball should drop just in front of you with barely any bounce.', 'If it bounces away, you are not dropping your foot fast enough.', 'Count how many of 20 high balls stay within a step of you.'],
+      ['Try it with longer passes', 'Have a friend kick long balls to you and kill them with one touch.', 'Real passes come with more speed. Start soft and build up.', 'Kill 15 long balls from a friend.']
+    ]},
+    { id: 'headtouch', cat: 'First touch', name: 'Head control', level: 'Advanced', steps: [
+      ['Use your forehead', 'Control the ball with the flat part of your forehead, just below the hairline.', 'Keep your eyes open and on the ball the whole time.', 'Toss the ball gently onto your forehead and catch it. 10 reps.'],
+      ['Bend your knees and lean back slightly', 'Stand with knees bent and lean back a little so your forehead faces up toward the ball.', 'Bent knees let you absorb the ball.', 'Get into position under a toss 10 times.'],
+      ['Cushion by sinking', 'As the ball touches your head, bend your knees and drop slightly so the ball loses speed.', 'Don\'t push your head into it. Let it come to you.', 'Toss and cushion on your forehead. 15 attempts.'],
+      ['Let it drop to your feet', 'Guide the ball down in front of you and control it with your foot.', 'Start with soft, low tosses before trying real crosses.', 'Head control, then foot control. 10 reps.']
+    ]},
     { id: 'rainbow', cat: 'Tricks', name: 'Rainbow flick', level: 'Advanced', steps: [
       ['Set the ball between your feet', 'Stand still with the ball between your feet, a little in front of you. Your stronger foot is the one that will flick, so put it slightly ahead of the ball and your other foot just behind it.', 'Learn it standing still first. Doing it while running comes much later.', 'Set up the starting position 10 times without moving the ball, until it feels natural.'],
       ['Trap the ball with your back foot', 'Press the inside of your back foot against the back of the ball. Your front foot stays just in front, with its heel close to the ball.', 'The ball should feel squeezed between your feet, not loose.', 'Hold the ball trapped between your feet for 5 seconds. 10 reps.'],
