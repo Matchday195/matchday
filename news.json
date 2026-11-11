@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-11T16:56:15Z",
+ "updated": "2026-11-11T17:55:44Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Man Utd strike Pochettino agreement with Carrick set to depart",
+   "link": "https://www.skysports.com/football/news/11095/13610949/mauricio-pochettino-man-utd-strike-agreement-with-michael-carricks-potential-successor",
+   "source": "Sky Sports",
+   "published": "2026-11-11T17:00:00Z",
+   "teams": [
+    "MUN"
+   ]
+  },
   {
    "title": "Kane targets biggest team prizes ahead of record-breaking England cap",
    "link": "https://www.skysports.com/football/news/11095/13610856/england-harry-kane-targets-european-championships-world-cup-and-champions-league-to-add-biggest-team-prizes-to-ballon-dor",
@@ -20,15 +29,6 @@
    "link": "https://www.theguardian.com/football/2026/nov/11/manchester-united-close-mauricio-pochettino-deal-michael-carrick",
    "source": "The Guardian",
    "published": "2026-11-11T13:52:39Z",
-   "teams": [
-    "MUN"
-   ]
-  },
-  {
-   "title": "Man Utd strike Pochettino agreement as Carrick takes training",
-   "link": "https://www.skysports.com/football/news/11095/13610949/mauricio-pochettino-man-utd-strike-agreement-with-michael-carricks-potential-successor",
-   "source": "Sky Sports",
-   "published": "2026-11-11T12:00:00Z",
    "teams": [
     "MUN"
    ]
@@ -59,6 +59,15 @@
    "published": "2026-11-10T10:30:35Z",
    "teams": [
     "MCI"
+   ]
+  },
+  {
+   "title": "Jobe joins brother Jude with England to showcase his own talent",
+   "link": "https://www.skysports.com/football/news/11095/13608890/england-jobe-bellingham-has-the-chance-to-showcase-his-own-talent-alongside-brother-jude-in-thomas-tuchels-squad",
+   "source": "Sky Sports",
+   "published": "2026-11-06T14:24:00Z",
+   "teams": [
+    "N-ENG"
    ]
   },
   {
