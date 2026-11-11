@@ -256,4 +256,20 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 @keyframes kLeg { 0%, 20% { transform: rotate(0deg); } 42% { transform: rotate(58deg); } 54% { transform: rotate(-22deg); } 70%, 88% { transform: rotate(-72deg); } 100% { transform: rotate(0deg); } }
 @keyframes kBody { 0%, 42% { transform: rotate(0deg); } 54%, 88% { transform: rotate(6deg); } 100% { transform: rotate(0deg); } }
 @keyframes kBall { 0%, 54% { transform: translate(0, 0); opacity: 1; } 78% { transform: translate(140px, -30px); opacity: 1; } 88% { transform: translate(148px, -18px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .anim .k-leg, .anim .k-body, .anim .k-ball, .slide-next, .slide-prev { animation: none; } .anim .k-leg { transform: rotate(-22deg); } }
+/* Rainbow flick */
+.anim .r-shin { transform-box: view-box; transform-origin: 96px 132px; animation: rShin 3s ease-in-out infinite; }
+.anim .r-body { transform-box: view-box; transform-origin: 76px 160px; animation: rBody 3s ease-in-out infinite; }
+.anim .r-ball { animation: rBall 3s linear infinite; }
+@keyframes rShin { 0% { transform: rotate(0deg); } 25% { transform: rotate(18deg); } 38% { transform: rotate(115deg); } 55% { transform: rotate(100deg); } 75%, 100% { transform: rotate(0deg); } }
+@keyframes rBody { 0%, 25% { transform: rotate(0deg); } 40%, 70% { transform: rotate(9deg); } 85%, 100% { transform: rotate(0deg); } }
+@keyframes rBall { 0% { transform: translate(0, 0); opacity: 1; } 25% { transform: translate(6px, -18px); } 38% { transform: translate(8px, -40px); } 48% { transform: translate(14px, -112px); } 56% { transform: translate(32px, -138px); } 64% { transform: translate(56px, -122px); } 72% { transform: translate(76px, -64px); } 79% { transform: translate(86px, 0); } 86% { transform: translate(96px, 0); opacity: 1; } 94%, 100% { transform: translate(96px, 0); opacity: 0; } }
+/* Sombrero flick */
+.anim .s-def { animation: sDef 3.4s ease-in-out infinite; }
+.anim .s-player { animation: sPlayer 3.4s ease-in-out infinite; }
+.anim .s-leg { transform-box: view-box; transform-origin: 64px 105px; animation: sLeg 3.4s ease-in-out infinite; }
+.anim .s-ball { animation: sBall 3.4s linear infinite; }
+@keyframes sDef { 0% { transform: translateX(50px); } 32%, 100% { transform: translateX(0); } }
+@keyframes sPlayer { 0%, 42% { transform: translateX(0); opacity: 1; } 82%, 92% { transform: translateX(150px); opacity: 1; } 100% { transform: translateX(150px); opacity: 0; } }
+@keyframes sLeg { 0%, 30% { transform: rotate(0deg); } 36% { transform: rotate(-38deg); } 46%, 100% { transform: rotate(0deg); } }
+@keyframes sBall { 0% { transform: translate(0, 0); opacity: 1; } 8% { transform: translate(0, -12px); } 16% { transform: translate(0, 0); } 24% { transform: translate(0, -12px); } 34% { transform: translate(0, 4px); } 44% { transform: translate(24px, -78px); } 54% { transform: translate(58px, -108px); } 64% { transform: translate(100px, -88px); } 74% { transform: translate(130px, -34px); } 82% { transform: translate(148px, 0); } 92% { transform: translate(154px, 0); opacity: 1; } 100% { transform: translate(154px, 0); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .anim *, .slide-next, .slide-prev { animation: none !important; } .anim .k-leg { transform: rotate(-22deg); } }

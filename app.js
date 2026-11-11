@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.3.0';
+  const APP_VERSION = '2.4.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -762,7 +762,8 @@
     const st = screens.skills.st || (screens.skills.st = { cat: 'All' });
     const prog = getProg(); const all = DataSource.skills();
     const started = !!prog.last; const last = all.find((s) => s.id === prog.last) || all[0]; const ls = prog.steps[last.id] || 0;
-    const list = all.filter((s) => st.cat === 'All' || s.cat === st.cat);
+    const ORDER = { Beginner: 0, Intermediate: 1, Advanced: 2 };
+    const list = all.filter((s) => st.cat === 'All' || s.cat === st.cat).sort((x, y) => ORDER[x.level] - ORDER[y.level]);
     return {
       html: `<div class="screen">
         <header class="topbar"><span class="brand" style="font-size:1.6em">Skills</span><span class="small muted row" style="gap:6px">${icon('down', 14)}Saved offline</span></header>
@@ -802,7 +803,40 @@
       <text class="k-cap" x="150" y="182" text-anchor="middle" fill="#B6F23A" font-size="11" font-weight="700">Swing back · Strike the middle · Follow through</text>
     </svg>`;
   }
-  const SKILL_ANIM = { laces: lacesAnim };
+  // Shared stick-figure pieces (side view, facing right). Ground is y=160.
+  const G = '#E8F5EC', L = '#B6F23A';
+  const ground = `<line x1="10" y1="160" x2="290" y2="160" stroke="${G}" stroke-opacity=".5" stroke-width="2"/>`;
+  const ballSvg = (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="7" fill="#fff"/><path d="M${cx - 3} ${cy - 3} l3 -2 l3 2 l-1 3 h-4z" fill="#173F26"/>`;
+  const caption = (t) => `<text x="150" y="182" text-anchor="middle" fill="${L}" font-size="11" font-weight="700">${t}</text>`;
+  // Rainbow flick: ball rolls up the back of the front heel, the heel flicks up, the ball arcs over the head and lands in front.
+  function rainbowAnim() {
+    return `<svg class="anim" width="100%" height="190" viewBox="0 0 300 190" role="img" aria-label="Animation: the ball is rolled up the back of the front leg, the heel flicks up, and the ball arcs over the player's head to land in front">
+      ${ground}
+      <g class="r-body"><circle cx="94" cy="46" r="9" fill="${G}"/><line x1="93" y1="57" x2="90" y2="105" stroke="${G}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="92" y1="68" x2="72" y2="88" stroke="${G}" stroke-width="5" stroke-linecap="round"/><line x1="92" y1="68" x2="112" y2="86" stroke="${G}" stroke-width="5" stroke-linecap="round"/>
+        <path d="M90 105 L80 132 L70 160 L82 160" fill="none" stroke="${G}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="90" y1="105" x2="96" y2="132" stroke="${L}" stroke-width="7" stroke-linecap="round"/>
+        <g class="r-shin"><path d="M96 132 L95 158 L107 161" fill="none" stroke="${L}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+      <g class="r-ball">${ballSvg(87, 153)}</g>
+      ${caption('Roll it up the heel · Flick the heel up · Lean forward')}
+    </svg>`;
+  }
+  // Sombrero flick: defender closes in, the ball is scooped over their head, the player runs past and meets the ball.
+  function sombreroAnim() {
+    return `<svg class="anim" width="100%" height="190" viewBox="0 0 300 190" role="img" aria-label="Animation: a defender runs in, the player scoops the ball over the defender's head, runs past and collects it on the other side">
+      ${ground}
+      <g class="s-def" opacity=".75"><circle cx="150" cy="46" r="9" fill="#FF8FB1"/><line x1="150" y1="57" x2="152" y2="105" stroke="#FF8FB1" stroke-width="7" stroke-linecap="round"/>
+        <line x1="151" y1="68" x2="132" y2="84" stroke="#FF8FB1" stroke-width="5" stroke-linecap="round"/><line x1="151" y1="68" x2="168" y2="86" stroke="#FF8FB1" stroke-width="5" stroke-linecap="round"/>
+        <path d="M152 105 L144 160 L134 160 M152 105 L162 160 L152 160" fill="none" stroke="#FF8FB1" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g class="s-player"><circle cx="66" cy="46" r="9" fill="${G}"/><line x1="66" y1="57" x2="64" y2="105" stroke="${G}" stroke-width="7" stroke-linecap="round"/>
+        <line x1="65" y1="68" x2="46" y2="86" stroke="${G}" stroke-width="5" stroke-linecap="round"/><line x1="65" y1="68" x2="84" y2="84" stroke="${G}" stroke-width="5" stroke-linecap="round"/>
+        <path d="M64 105 L60 132 L58 160 L70 160" fill="none" stroke="${G}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <g class="s-leg"><path d="M64 105 L70 132 L72 156 L84 158" fill="none" stroke="${L}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+      <g class="s-ball">${ballSvg(88, 132)}</g>
+      ${caption('Wait till they’re close · Scoop it over · Run past and collect')}
+    </svg>`;
+  }
+  const SKILL_ANIM = { laces: lacesAnim, rainbow: rainbowAnim, sombrero: sombreroAnim };
   // Target reps for a drill: "10 reps", "Shoot 20 times", "15 free kicks"… falls back to 10.
   function drillTarget(text) {
     const m = String(text).match(/(\d+)\s+(?:reps?|shots?|times|volleys|free kicks?|run-ups|tosses|touches|passes|kicks|juggles|turns|crosses|headers|attempts)\b/i);
