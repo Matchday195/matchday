@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.6.0';
+  const APP_VERSION = '2.6.1';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -848,14 +848,14 @@
     const prog = getProg(); let i = Math.min(prog.steps[id] || 0, sk.steps.length - 1);
     if (prog.last !== id) { prog.last = id; saveProg(prog); }
     const step = sk.steps[i]; const last = i === sk.steps.length - 1;
-    const skillUi = screens.skill.ui || (screens.skill.ui = {}); if (skillUi.id !== id) { screens.skill.ui = { id }; return screens.skill(id); }
+    const skillUi = screens.skill.ui || (screens.skill.ui = {}); if (skillUi.id !== id) { screens.skill.ui = { id, watch: true }; return screens.skill(id); }
     const anim = !!SKILL_ANIM[id] || !!(window.MDAnim && MDAnim.has(id)); const rk = id + '_' + i; const reps = (prog.reps || {})[rk] || 0; const target = drillTarget(step[3]);
     return {
       html: `<div class="screen">
         <header class="topbar">${backBtn('#skills', 'Back to skills')}<div style="flex:1"><div class="tiny muted">${esc(sk.cat)} · ${esc(sk.level)}</div><b class="display" style="font-size:1.15em">${esc(sk.name)}</b></div></header>
         <div style="padding:6px 20px 0"><div class="stepbars" style="grid-template-columns:repeat(${sk.steps.length},1fr)">${sk.steps.map((s, k) => `<button type="button" data-step="${k}" class="${k <= i ? 'done' : ''}" aria-label="Go to step ${k + 1}" ${k === i ? 'aria-current="step"' : ''}><span></span></button>`).join('')}</div></div>
         <main class="scroll">
-          <div class="figure"><span class="tag">Step ${i + 1} of ${sk.steps.length}</span>${anim && skillUi.watch ? (SKILL_ANIM[id] ? SKILL_ANIM[id]() : MDAnim.svg(id)) : sk.figs ? lacesFig(i) : `<span class="bignum" aria-hidden="true">${i + 1}</span>`}${anim ? `<button type="button" class="watchbtn" id="watch" aria-pressed="${!!skillUi.watch}">${skillUi.watch ? 'Show this step' : '▶ Watch the full move'}</button>` : ''}</div>
+          <div class="figure"><span class="tag">Step ${i + 1} of ${sk.steps.length}</span>${anim && skillUi.watch ? (SKILL_ANIM[id] ? SKILL_ANIM[id]() : MDAnim.svg(id)) : sk.figs ? lacesFig(i) : `<span class="bignum" aria-hidden="true">${i + 1}</span>`}${anim && sk.figs ? `<button type="button" class="watchbtn" id="watch" aria-pressed="${!!skillUi.watch}">${skillUi.watch ? 'Show this step' : '▶ Play animation'}</button>` : ''}</div>
           <div class="${skillUi.dir ? 'slide-' + skillUi.dir : ''}"><h2 style="margin:0 0 8px;font-size:1.4em">${esc(step[0])}</h2><p style="margin:0;line-height:1.55">${esc(step[1])}</p></div>
           <div class="card tip"><span class="ic" style="color:var(--accent)">${icon('bulb', 18)}</span><div><b style="color:var(--accent)">COACH TIP</b><p>${esc(step[2])}</p></div></div>
           <div class="card tip"><span class="ic" style="color:var(--c-cal)">${icon('target', 18)}</span><div><b style="color:var(--c-cal)">PRACTICE DRILL</b><p>${esc(step[3])}</p>
@@ -864,7 +864,7 @@
         </main>
         <div class="stepnav"><button type="button" class="btn ghost" id="prev" style="flex:1" ${i === 0 ? 'disabled' : ''}>Back</button><button type="button" class="btn" id="next" style="flex:2">${last ? (prog.done[id] ? 'Start again' : 'Mark as learned') : 'Next step'}</button></div></div>`,
       mount() {
-        const go = (k) => { if (k < 0 || k >= sk.steps.length || k === i) return; skillUi.dir = k > i ? 'next' : 'prev'; skillUi.watch = false; const p = getProg(); p.steps[id] = k; saveProg(p); render(); window.scrollTo(0, 0); skillUi.dir = ''; };
+        const go = (k) => { if (k < 0 || k >= sk.steps.length || k === i) return; skillUi.dir = k > i ? 'next' : 'prev'; const p = getProg(); p.steps[id] = k; saveProg(p); render(); window.scrollTo(0, 0); skillUi.dir = ''; };
         const setReps = (n) => { const p = getProg(); p.reps = p.reps || {}; p.reps[rk] = Math.max(0, n); saveProg(p); render(); if (n === target) toast('Drill done! ' + target + ' reps'); };
         on('#repPlus', 'click', () => setReps(reps + 1));
         on('#repMinus', 'click', () => setReps(reps - 1));
