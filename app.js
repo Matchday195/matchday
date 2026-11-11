@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.4.0';
+  const APP_VERSION = '2.4.1';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -403,7 +403,7 @@
         l: mine.slice(0, 2).map((f) => [matchTitle(f), DOW[parseYmd(f.date).getDay()] + ' · ' + fmtTime(f.time)]) },
       { id: 'tr', t: 'Transfer News', s: tr.length ? 'Latest: ' + timeAgo(tr[0].published) : (News.state() === 'loading' ? 'Loading…' : 'Real headlines'), c: 'var(--c-tr)', href: '#transfers', ic: 'swap',
         l: tr.slice(0, 1).map((x) => [x.title, x.source + ' · ' + timeAgo(x.published)]) },
-      { id: 'sk', t: 'Skills', s: started ? sk.name.split(' (')[0] + ' · ' + (stepNow + 1) + '/' + sk.steps.length : DataSource.skills().length + ' tutorials', c: 'var(--c-sk)', href: started ? '#skill/' + sk.id : '#skills', ic: 'book',
+      { id: 'sk', t: 'Skills', s: started ? sk.name.split(' (')[0] + ' · ' + (stepNow + 1) + '/' + sk.steps.length : DataSource.skills().length + ' tutorials', c: 'var(--c-sk)', href: '#skills', ic: 'book',
         l: [started ? ['Continue: ' + sk.name.split(' (')[0], 'Step ' + (stepNow + 1) + ' of ' + sk.steps.length] : ['Start learning', 'Shooting, dribbling, passing']] },
       { id: 'al', t: 'Alerts', s: alertCount ? alertCount + ' matches on' : 'Set up alerts', c: 'var(--c-al)', href: '#alerts', ic: 'bell',
         l: [['Notifications ' + ({ granted: 'on', denied: 'blocked', default: 'off', unsupported: 'not supported' })[notifyState()], 'Goals, kickoff, full time']] },
