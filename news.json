@@ -1,11 +1,29 @@
 {
- "updated": "2026-11-11T08:33:31Z",
+ "updated": "2026-11-11T09:29:59Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Manchester United close on Mauricio Pochettino deal before settling Carrick’s fate",
+   "link": "https://www.theguardian.com/football/2026/nov/11/manchester-united-close-mauricio-pochettino-deal-michael-carrick",
+   "source": "The Guardian",
+   "published": "2026-11-11T08:56:37Z",
+   "teams": [
+    "MUN"
+   ]
+  },
+  {
+   "title": "Man Utd close to agreeing Poch deal as Carrick reports for work",
+   "link": "https://www.skysports.com/football/news/11095/13610862/mauricio-pochettino-man-utd-close-to-agreeing-deal-with-michael-carricks-potential-successor-ahead-of-monaco-meeting",
+   "source": "Sky Sports",
+   "published": "2026-11-11T08:28:00Z",
+   "teams": [
+    "MUN"
+   ]
+  },
   {
    "title": "Chelsea latest: 'Blues join race to sign Arsenal midfielder'",
    "link": "https://www.skysports.com/football/live-blog/11095/13025497/chelsea-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
