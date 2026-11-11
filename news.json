@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-11T10:32:46Z",
+ "updated": "2026-11-11T11:28:51Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Liverpool latest: Van Dijk 'not panicking' over new deal",
+   "link": "https://www.skysports.com/football/live-blog/11095/13025501/liverpool-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+   "source": "Sky Sports",
+   "published": "2026-11-11T10:40:00Z",
+   "teams": [
+    "LIV"
+   ]
+  },
   {
    "title": "Man Utd close to agreeing Poch deal as Carrick reports for work",
    "link": "https://www.skysports.com/football/news/11095/13610862/mauricio-pochettino-man-utd-close-to-agreeing-deal-with-michael-carricks-potential-successor-ahead-of-monaco-meeting",
@@ -22,34 +31,6 @@
    "published": "2026-11-11T08:56:37Z",
    "teams": [
     "MUN"
-   ]
-  },
-  {
-   "title": "Chelsea latest: 'Blues join race to sign Arsenal midfielder'",
-   "link": "https://www.skysports.com/football/live-blog/11095/13025497/chelsea-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
-   "source": "Sky Sports",
-   "published": "2026-11-10T21:00:00Z",
-   "teams": [
-    "ARS",
-    "CHE"
-   ]
-  },
-  {
-   "title": "Merson: Man Utd transfer policy is to blame - not Carrick",
-   "link": "https://www.skysports.com/football/news/11095/13610645/man-utds-transfer-policy-to-blame-for-clubs-worst-premier-league-start-and-not-michael-carrick-says-paul-merson",
-   "source": "Sky Sports",
-   "published": "2026-11-10T13:30:00Z",
-   "teams": [
-    "MUN"
-   ]
-  },
-  {
-   "title": "Liverpool latest: Van Dijk 'not panicking' about new deal.",
-   "link": "https://www.skysports.com/football/live-blog/11095/13025501/liverpool-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
-   "source": "Sky Sports",
-   "published": "2026-11-10T12:00:00Z",
-   "teams": [
-    "LIV"
    ]
   },
   {
