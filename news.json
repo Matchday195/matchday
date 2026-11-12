@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-12T22:22:40Z",
+ "updated": "2026-11-12T23:17:38Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -7,12 +7,12 @@
  ],
  "items": [
   {
-   "title": "Euro latest: 'PSV in discussions over deal for De Bruyne'",
-   "link": "https://www.skysports.com/football/live-blog/11095/13575723/european-football-news-and-transfers-barcelona-real-madrid-psg-bayern-munich-latest-and-more",
+   "title": "Papers: Bruno rejects second Man Utd contract offer",
+   "link": "https://www.skysports.com/football/news/11095/13611732/bruno-fernandes-rejects-second-manchester-united-contract-offer-paper-talk",
    "source": "Sky Sports",
-   "published": "2026-11-12T13:52:00Z",
+   "published": "2026-11-12T21:00:00Z",
    "teams": [
-    "PSV"
+    "MUN"
    ]
   },
   {
@@ -29,15 +29,6 @@
    "link": "https://www.skysports.com/football/news/11095/13606106/man-utd-sack-michael-carrick-with-mauricio-pochettino-set-to-be-appointed-after-worst-start-to-premier-league-season",
    "source": "Sky Sports",
    "published": "2026-11-12T10:27:00Z",
-   "teams": [
-    "MUN"
-   ]
-  },
-  {
-   "title": "Manchester United reach framework deal with Pochettino before settling Carrick’s fate",
-   "link": "https://www.theguardian.com/football/2026/nov/11/manchester-united-close-mauricio-pochettino-deal-michael-carrick",
-   "source": "The Guardian",
-   "published": "2026-11-11T13:52:39Z",
    "teams": [
     "MUN"
    ]
