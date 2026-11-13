@@ -6,6 +6,7 @@ FOOTBALL_DATA_TOKEN repository secret and is never written to any file.
 Writes into the output folder:
   matches.json    matches from about 2 weeks ago to 2 weeks ahead, all free-plan competitions
   standings.json  league tables (refreshed at most once an hour)
+  season.json     every match of the current season for each competition (refreshed every 6 hours)
   status.json     whether the last run worked (no secrets inside), for troubleshooting
 Free plan limit is 10 calls per minute, so calls are spaced 7 seconds apart.
 """
@@ -14,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 
 API = os.environ.get("FD_API", "https://api.football-data.org/v4")  # override only for local testing
 LEAGUE_CODES = ["PL", "PD", "SA", "BL1", "FL1", "DED", "PPL", "ELC", "BSA"]  # tables; codes not on the plan are skipped
+SEASON_CODES = LEAGUE_CODES + ["CL"]  # whole-season fixtures, one call each
 calls = 0
 
 
@@ -31,10 +33,10 @@ def team(t):
     return {"id": t.get("id"), "name": t.get("name") or "", "short": t.get("shortName") or t.get("name") or "", "tla": t.get("tla") or ""}
 
 
-def slim(m):
+def slim(m, comp=None):
     s = m.get("score") or {}
     ft, ht = s.get("fullTime") or {}, s.get("halfTime") or {}
-    c = m.get("competition") or {}
+    c = m.get("competition") or comp or {}
     return {"id": m["id"], "comp": c.get("code"), "compName": c.get("name"), "utcDate": m.get("utcDate"),
             "status": m.get("status"), "minute": m.get("minute"), "matchday": m.get("matchday"), "stage": m.get("stage"),
             "home": team(m.get("homeTeam") or {}), "away": team(m.get("awayTeam") or {}),
@@ -107,6 +109,31 @@ def main(out, quick=False):
                                           "l": r["lost"], "gd": r["goalDifference"], "pts": r["points"]} for r in total.get("table", [])]}
             write(sp, {"updated": stamp, "tables": tables})
             status["tables"] = len(tables)
+
+        # Whole season, every competition: refresh every 6 hours (the minute updates cover live games).
+        zp = os.path.join(out, "season.json")
+        old = None
+        try:
+            old = json.load(open(zp, encoding="utf-8"))
+        except Exception:
+            pass
+        fresh = old and (now - datetime.strptime(old["updated"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)) < timedelta(hours=6)
+        if fresh or quick:
+            status["season"] = len((old or {}).get("matches", []))
+        else:
+            season = {m["id"]: m for m in (old or {}).get("matches", [])}
+            for code in SEASON_CODES:
+                try:
+                    data = get(f"/competitions/{code}/matches", token)
+                except urllib.error.HTTPError as e:
+                    if e.code in (403, 404):
+                        continue  # not on the free plan
+                    raise
+                for m in data.get("matches", []):
+                    season[m["id"]] = slim(m, data.get("competition"))
+            items = sorted(season.values(), key=lambda m: (m["utcDate"] or "", m["id"]))
+            write(zp, {"updated": stamp, "matches": items})
+            status["season"] = len(items)
         status["ok"] = True
     except urllib.error.HTTPError as e:
         status["error"] = f"HTTP {e.code} from football-data.org" + (" (check the token)" if e.code in (400, 401, 403) else "")

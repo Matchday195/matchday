@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p out
           if git fetch --depth 1 origin data 2>/dev/null; then
-            for f in matches.json standings.json; do git show "origin/data:$f" > "out/$f" 2>/dev/null || rm -f "out/$f"; done
+            for f in matches.json standings.json season.json; do git show "origin/data:$f" > "out/$f" 2>/dev/null || rm -f "out/$f"; done
           fi
       - name: Fetch every minute while matches are on
         env:
@@ -56,7 +56,7 @@ jobs:
           while :; do
             i=$((i + 1))
             start=$(date +%s)
-            # Full fetch (2 weeks back/ahead + tables) on the first pass and every 30 minutes; quick 1-call fetch otherwise.
+            # Full fetch (2 weeks back/ahead + tables + whole season every 6h) on the first pass and every 30 minutes; quick 1-call fetch otherwise.
             if [ $((start - last_full)) -ge 1800 ]; then
               python scripts/fetch_matches.py out; last_full=$start
             else

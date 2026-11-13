@@ -8,7 +8,7 @@ Every league, every match. A soccer app that installs on your phone and works of
 - **Log in / create account** with "Save my login", plus guest mode
 - **Loading screen** (3.5 seconds) with the Matchday 195 logo
 - **Home** with 6 cubes you can flip: Live Matches, My Calendar, Transfer News, Skills, Alerts, My Profile
-- **Matches**: real fixtures, scores and results by day and league, with search
+- **Matches** (whole season, jump to any date): real fixtures, scores and results by day and league, with search
 - **Match page**: score, status, kickoff in your time, half-time score
 - **Tournament pages**: real league tables, matches and every team
 - **My calendar**: favorite teams by month or matchweek, with alert bells

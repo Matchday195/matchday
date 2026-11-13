@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const D = window.MD_DATA;
-  const APP_VERSION = '2.6.1';
+  const APP_VERSION = '2.7.0';
   const app = document.getElementById('app');
 
   /* ---------- helpers ---------- */
@@ -140,7 +140,7 @@
   const liveTeams = {};
   const Real = (function () {
     const BASE = 'https://raw.githubusercontent.com/Matchday195/matchday/data/';
-    let m = store.get('real_matches', null), s = store.get('real_standings', null);
+    let m = store.get('real_matches', null), s = store.get('real_standings', null), z = store.get('real_season', null), zAt = 0;
     let state = m ? 'ok' : 'loading';
     async function getJson(name) {
       const r = await fetch(BASE + name + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
@@ -151,12 +151,22 @@
       try { const j = await getJson('matches.json'); if (j && Array.isArray(j.matches)) { m = j; state = 'ok'; store.set('real_matches', j); cache = null; } }
       catch (e) { if (!m) state = navigator.onLine ? 'none' : 'offline'; }
       try { const j = await getJson('standings.json'); if (j && j.tables) { s = j; store.set('real_standings', j); } } catch (e) { /* tables are optional */ }
+      // Whole season: changes slowly, so check it every 30 minutes.
+      if (!z || Date.now() - zAt > 30 * 60000) {
+        try { const j = await getJson('season.json'); if (j && Array.isArray(j.matches)) { zAt = Date.now(); if (!z || j.updated !== z.updated) { z = j; cache = null; try { store.set('real_season', j); } catch (e) { /* storage full: keep it in memory */ } } } } catch (e) { /* optional */ }
+        if (!m && z) state = 'ok';
+      }
       return state === 'ok';
     }
     let cache = null, cacheMin = -1;
     function fixtures() {
       const min = Math.floor(Date.now() / 60000);
-      if (!cache || cacheMin !== min) { cache = (m ? m.matches : []).map(convert); cacheMin = min; }
+      if (!cache || cacheMin !== min) {
+        const all = new Map();
+        (z ? z.matches : []).forEach((x) => all.set(x.id, x));
+        (m ? m.matches : []).forEach((x) => all.set(x.id, x)); // live data wins
+        cache = Array.from(all.values()).map(convert); cacheMin = min;
+      }
       return cache;
     }
     return { load, fixtures, updated: () => m && m.updated, tables: () => (s && s.tables) || {}, state: () => state };
@@ -443,9 +453,11 @@
   screens.matches = function () {
     const st = screens.matches.st || (screens.matches.st = { league: 'All', day: 0, q: '' });
     const base = new Date(); base.setHours(0, 0, 0, 0);
-    const days = [-2, -1, 0, 1, 2].map((o) => { const d = new Date(base); d.setDate(d.getDate() + o); return { o, d }; });
+    const days = [-2, -1, 0, 1, 2].map((k) => { const o = st.day + k; const d = new Date(base); d.setDate(d.getDate() + o); return { o, d }; });
     const sel = new Date(base); sel.setDate(sel.getDate() + st.day);
     const q = st.q.trim().toLowerCase();
+    const allFx = DataSource.fixtures().filter((f) => st.league === 'All' || f.league === st.league);
+    const hasGames = new Set(allFx.map((f) => f.date));
     let fx = DataSource.fixtures().filter((f) => f.date === ymd(sel));
     if (st.league !== 'All') fx = fx.filter((f) => f.league === st.league);
     if (q) fx = fx.filter((f) => (T(f.home).name + ' ' + T(f.away).name + ' ' + f.league).toLowerCase().includes(q));
@@ -472,7 +484,8 @@
         ${offlineBanner()}
         <main class="scroll">
           <label class="search">${icon('search', 18)}<input id="q" type="search" placeholder="Search teams or leagues" aria-label="Search teams or leagues" value="${esc(st.q)}"></label>
-          <div class="daystrip">${days.map(({ o, d }) => `<button type="button" data-day="${o}" aria-pressed="${st.day === o}"><span>${o === 0 ? 'Today' : DOW[d.getDay()]}</span><span>${d.getDate()}</span></button>`).join('')}</div>
+          <div class="daynav"><button type="button" class="iconbtn" id="wkPrev" aria-label="Back one week">‹</button><label class="daypick"><b>${sel.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: sel.getFullYear() === base.getFullYear() ? undefined : 'numeric' })}</b>${icon('cal', 16)}<input type="date" id="dayPick" value="${ymd(sel)}" aria-label="Pick a date"></label>${st.day ? '<button type="button" class="chip" id="goToday">Today</button>' : ''}<button type="button" class="iconbtn" id="wkNext" aria-label="Forward one week">›</button></div>
+          <div class="daystrip">${days.map(({ o, d }) => `<button type="button" data-day="${o}" aria-pressed="${st.day === o}"><span>${o === 0 ? 'Today' : DOW[d.getDay()]}</span><span>${d.getDate()}</span><i class="${hasGames.has(ymd(d)) ? 'dot' : 'nodot'}"></i></button>`).join('')}</div>
           <div class="chips">${['All'].concat(DataSource.leagues().map((l) => l.name)).map((l) => `<button type="button" class="chip" data-league="${esc(l)}" aria-pressed="${st.league === l}">${esc(l)}</button>`).join('')}</div>
           ${featured ? `<a class="featured" href="#match/${featured.id}">
             <div class="row between small muted"><span>${esc(featured.league)}</span><span class="live-pill">${liveLabel(featured)}</span></div>
@@ -483,6 +496,10 @@
         </main>${nav('matches')}</div>`,
       mount() {
         on('[data-day]', 'click', (e, el) => { st.day = Number(el.dataset.day); render(); });
+        on('#wkPrev', 'click', () => { st.day -= 7; render(); });
+        on('#wkNext', 'click', () => { st.day += 7; render(); });
+        on('#goToday', 'click', () => { st.day = 0; render(); });
+        on('#dayPick', 'change', (e) => { const v = e.target.value; if (!v) return; const [y, mo, d] = v.split('-').map(Number); st.day = Math.round((new Date(y, mo - 1, d) - base) / 86400000); render(); });
         on('[data-league]', 'click', (e, el) => { st.league = el.dataset.league; render(); });
         on('#q', 'input', (e) => { st.q = e.target.value; clearTimeout(st.t); st.t = setTimeout(() => { render(); const i = qs('#q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 250); });
         on('[data-bell]', 'click', (e, el) => toggleMatchAlert(el.dataset.bell));

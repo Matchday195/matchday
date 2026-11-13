@@ -140,6 +140,11 @@ a.setrow { color: var(--text); }
 .daystrip button { height: 54px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
 .daystrip button span:first-child { font-size: .73em; font-weight: 500; } .daystrip button span:last-child { font-size: 1.05em; font-weight: 700; }
 .daystrip button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--surface2); }
+.daystrip button { position: relative; } .daystrip .dot, .daystrip .nodot { width: 5px; height: 5px; border-radius: 50%; margin-top: 1px; } .daystrip .dot { background: var(--accent); }
+.daynav { display: flex; align-items: center; gap: 8px; }
+.daynav .iconbtn { font-size: 1.5em; line-height: 1; }
+.daypick { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; border-radius: 12px; border: 1px solid var(--border); color: var(--text); cursor: pointer; }
+.daypick input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
 .search { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
 .search input { flex: 1; background: transparent; border: 0; outline: none; color: var(--text); font-size: .95em; min-width: 0; }
 .featured { display: block; border-radius: 18px; padding: 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%, var(--surface) 70%); border: 1px solid var(--border); color: var(--text); }
