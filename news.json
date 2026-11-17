@@ -1,11 +1,18 @@
 {
- "updated": "2026-11-17T05:33:30Z",
+ "updated": "2026-11-17T06:37:01Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Fifa accused of climate ‘record of failure’ due to Aramco deal and tournament expansion",
+   "link": "https://www.theguardian.com/football/2026/nov/17/fifa-accused-climate-record-failure-aramco-deal-tournament-expansion",
+   "source": "The Guardian",
+   "published": "2026-11-17T06:00:04Z",
+   "teams": []
+  },
   {
    "title": "Rice verbally agrees new Arsenal contract",
    "link": "https://www.skysports.com/football/news/11095/13612986/declan-rice-contract-arsenal-midfielder-verbally-agrees-new-320000-a-week-deal-with-the-premier-league-champions",
@@ -32,6 +39,13 @@
    "teams": [
     "ARS"
    ]
+  },
+  {
+   "title": "AFC Wimbledon, a failed £87m investment bid and the challenge for fan ownership",
+   "link": "https://www.theguardian.com/football/2026/nov/15/afc-wimbledon-a-failed-87m-investment-bid-and-the-challenge-for-fan-ownership",
+   "source": "The Guardian",
+   "published": "2026-11-15T08:00:09Z",
+   "teams": []
   },
   {
    "title": "Ten of the best-value deals from this summer’s transfer window",
