@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-18T15:29:53Z",
+ "updated": "2026-11-18T16:37:28Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Transfer Centre LIVE! Arsenal tracking Nusa and Schade in winger search",
+   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
+   "source": "Sky Sports",
+   "published": "2026-11-18T15:48:00Z",
+   "teams": [
+    "ARS"
+   ]
+  },
   {
    "title": "Arsenal willing to make sales to beat Chelsea and Liverpool to Scott signing",
    "link": "https://www.skysports.com/football/news/11095/13613285/alex-scott-arsenal-keen-on-chelsea-and-liverpool-target-with-bournemouth-softening-stance-over-potential-sale",
@@ -59,28 +68,12 @@
    ]
   },
   {
-   "title": "Transfer Centre LIVE! Get your questions in for today's SSN transfer special!",
-   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
-   "source": "Sky Sports",
-   "published": "2026-11-18T07:00:00Z",
-   "teams": []
-  },
-  {
    "title": "Wiegman cites young talent as key to new England deal after calling up Goodwin",
    "link": "https://www.theguardian.com/football/2026/nov/17/sarina-wiegman-england-young-talent-contract-isobel-goodwin-squad",
    "source": "The Guardian",
    "published": "2026-11-17T13:09:09Z",
    "teams": [
     "N-ENG"
-   ]
-  },
-  {
-   "title": "Declan Rice agrees new Arsenal contract making him club’s joint highest-paid player",
-   "link": "https://www.theguardian.com/football/2026/nov/17/declan-rice-new-arsenal-contract-jurrien-timber",
-   "source": "The Guardian",
-   "published": "2026-11-17T09:19:34Z",
-   "teams": [
-    "ARS"
    ]
   },
   {
