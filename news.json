@@ -1,11 +1,18 @@
 {
- "updated": "2026-11-18T07:16:51Z",
+ "updated": "2026-11-18T08:40:07Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Transfer Centre LIVE! Get your questions in for today's SSN transfer special!",
+   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
+   "source": "Sky Sports",
+   "published": "2026-11-18T07:00:00Z",
+   "teams": []
+  },
   {
    "title": "Strasbourg close to appointing Swansea boss Matos in £5m deal",
    "link": "https://www.skysports.com/football/live-blog/11095/13163353/championship-news-transfer-latest-and-gossip-plus-efl-updates-from-league-one-and-league-two",
@@ -32,13 +39,6 @@
    "teams": [
     "ARS"
    ]
-  },
-  {
-   "title": "Fifa accused of climate ‘record of failure’ due to Aramco deal and tournament expansion",
-   "link": "https://www.theguardian.com/football/2026/nov/17/fifa-accused-climate-record-failure-aramco-deal-tournament-expansion",
-   "source": "The Guardian",
-   "published": "2026-11-17T06:00:04Z",
-   "teams": []
   },
   {
    "title": "Rice verbally agrees new Arsenal contract",
