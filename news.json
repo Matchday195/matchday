@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-18T12:02:11Z",
+ "updated": "2026-11-18T13:13:02Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -7,12 +7,44 @@
  ],
  "items": [
   {
+   "title": "Netflix, Fox and the $2bn bid for the 2030 World Cup that could reshape live sports",
+   "link": "https://www.theguardian.com/football/2026/nov/18/netflix-fox-2030-world-cup-television-rights",
+   "source": "The Guardian",
+   "published": "2026-11-18T12:01:00Z",
+   "teams": []
+  },
+  {
+   "title": "Man Utd expected to back Poch in January transfer window",
+   "link": "https://www.skysports.com/football/news/11095/13613260/man-utd-transfer-news-calvin-bassey-and-jarrad-branthwaite-among-targets-with-mauricio-pochettino-set-to-be-backed-in-january",
+   "source": "Sky Sports",
+   "published": "2026-11-18T12:00:00Z",
+   "teams": [
+    "MUN"
+   ]
+  },
+  {
+   "title": "Your PL club's 'Unfinished Business' revealed ahead of January window",
+   "link": "https://www.skysports.com/football/news/11095/13613290/transfer-news-your-premier-league-clubs-unfinished-business-ahead-of-january-window",
+   "source": "Sky Sports",
+   "published": "2026-11-18T12:00:00Z",
+   "teams": []
+  },
+  {
    "title": "Aston Villa latest: Onana signs new deal",
    "link": "https://www.skysports.com/football/live-blog/11095/13025491/aston-villa-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
    "source": "Sky Sports",
    "published": "2026-11-18T11:00:00Z",
    "teams": [
     "AVL"
+   ]
+  },
+  {
+   "title": "Arsenal latest: Three transfer targets revealed ahead of January window",
+   "link": "https://www.skysports.com/football/live-blog/11095/13025486/arsenal-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+   "source": "Sky Sports",
+   "published": "2026-11-18T10:50:00Z",
+   "teams": [
+    "ARS"
    ]
   },
   {
