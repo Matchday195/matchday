@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-18T11:05:19Z",
+ "updated": "2026-11-18T12:02:11Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Aston Villa latest: Onana signs new deal",
+   "link": "https://www.skysports.com/football/live-blog/11095/13025491/aston-villa-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+   "source": "Sky Sports",
+   "published": "2026-11-18T11:00:00Z",
+   "teams": [
+    "AVL"
+   ]
+  },
   {
    "title": "Transfer Centre LIVE! Get your questions in for today's SSN transfer special!",
    "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
@@ -23,19 +32,19 @@
    ]
   },
   {
+   "title": "Euro latest: Guler signs new six-year Real Madrid contract",
+   "link": "https://www.skysports.com/football/live-blog/11095/13575723/european-football-news-and-transfers-barcelona-real-madrid-psg-bayern-munich-latest-and-more",
+   "source": "Sky Sports",
+   "published": "2026-11-17T12:38:00Z",
+   "teams": [
+    "RMA"
+   ]
+  },
+  {
    "title": "Declan Rice agrees new Arsenal contract making him club’s joint highest-paid player",
    "link": "https://www.theguardian.com/football/2026/nov/17/declan-rice-new-arsenal-contract-jurrien-timber",
    "source": "The Guardian",
    "published": "2026-11-17T09:19:34Z",
-   "teams": [
-    "ARS"
-   ]
-  },
-  {
-   "title": "Rice verbally agrees new Arsenal contract",
-   "link": "https://www.skysports.com/football/news/11095/13612986/declan-rice-contract-arsenal-midfielder-verbally-agrees-new-320000-a-week-deal-with-the-premier-league-champions",
-   "source": "Sky Sports",
-   "published": "2026-11-16T21:12:00Z",
    "teams": [
     "ARS"
    ]
