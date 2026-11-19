@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-19T22:51:11Z",
+ "updated": "2026-11-19T23:44:55Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -26,6 +26,16 @@
    "source": "The Guardian",
    "published": "2026-11-18T12:01:00Z",
    "teams": []
+  },
+  {
+   "title": "Papers: Fulham pushing to extend contract of Man Utd target",
+   "link": "https://www.skysports.com/football/news/11095/13614185/fulham-pushing-to-extend-contract-of-man-utd-target-calvin-bassey-paper-talk",
+   "source": "Sky Sports",
+   "published": "2026-11-17T22:58:00Z",
+   "teams": [
+    "FUL",
+    "MUN"
+   ]
   },
   {
    "title": "Ten of the best-value deals from this summer’s transfer window",
