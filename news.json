@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T16:46:13Z",
+ "updated": "2026-11-22T17:43:08Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -7,10 +7,20 @@
  ],
  "items": [
   {
-   "title": "Fernandes: Man Utd have offered new deal but now is not time for talks",
-   "link": "https://www.skysports.com/football/news/11095/13614990/bruno-fernandes-man-utd-captain-confirms-contract-offer-but-says-negotiations-are-on-hold",
-   "source": "Sky Sports",
-   "published": "2026-11-22T07:00:00Z",
+   "title": "Manchester City’s WSL title bid hit by Spurs after Vinberg and Naz’s late double",
+   "link": "https://www.theguardian.com/football/2026/nov/22/manchester-city-tottenham-wsl-match-report",
+   "source": "The Guardian",
+   "published": "2026-11-22T14:59:23Z",
+   "teams": [
+    "MCI",
+    "TOT"
+   ]
+  },
+  {
+   "title": "Bruno Fernandes reveals talks over new Manchester United contract are on hold",
+   "link": "https://www.theguardian.com/football/2026/nov/22/bruno-fernandes-reveals-talks-over-new-manchester-united-contract-are-on-hold",
+   "source": "The Guardian",
+   "published": "2026-11-22T11:33:54Z",
    "teams": [
     "MUN"
    ]
