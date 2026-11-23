@@ -1,11 +1,21 @@
 {
- "updated": "2026-11-23T07:39:25Z",
+ "updated": "2026-11-23T09:24:50Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Papers: Bassey seeking new Fulham deal rather than Man Utd move",
+   "link": "https://www.skysports.com/football/news/11095/13615514/man-utd-transfer-news-fulham-defender-calvin-bassey-is-in-talks-over-new-contract-amid-man-utd-links-paper-talk",
+   "source": "Sky Sports",
+   "published": "2026-11-23T08:00:00Z",
+   "teams": [
+    "FUL",
+    "MUN"
+   ]
+  },
   {
    "title": "Manchester City’s WSL title bid hit by Spurs after Vinberg and Naz’s late double",
    "link": "https://www.theguardian.com/football/2026/nov/22/manchester-city-tottenham-wsl-match-report",
