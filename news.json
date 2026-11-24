@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-24T16:11:41Z",
+ "updated": "2026-11-24T17:28:02Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -7,12 +7,29 @@
  ],
  "items": [
   {
-   "title": "Papers: Brentford defender emerges as Man Utd target as January budget revealed",
-   "link": "https://www.skysports.com/football/news/11095/13615837/man-utd-transfer-news-brentford-defender-nathan-collins-emerges-as-january-target-paper-talk",
+   "title": "Transfer Centre LIVE! Heaven open to leaving Man Utd in January",
+   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
    "source": "Sky Sports",
-   "published": "2026-11-23T22:40:00Z",
+   "published": "2026-11-24T16:55:00Z",
    "teams": [
-    "BRE",
+    "MUN"
+   ]
+  },
+  {
+   "title": "Spurs latest: Teenager Williams-Barnett signs new deal",
+   "link": "https://www.skysports.com/football/live-blog/11095/13025489/tottenham-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+   "source": "Sky Sports",
+   "published": "2026-11-24T16:15:00Z",
+   "teams": [
+    "TOT"
+   ]
+  },
+  {
+   "title": "Berrada admits Man Utd transfer spending will be limited by stadium plans",
+   "link": "https://www.skysports.com/football/news/11095/13615995/man-utd-transfer-spending-to-be-limited-by-new-stadium-plans-in-the-short-term-according-to-chief-executive-omar-berrada",
+   "source": "Sky Sports",
+   "published": "2026-11-24T16:00:00Z",
+   "teams": [
     "MUN"
    ]
   },
