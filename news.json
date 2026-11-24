@@ -1,11 +1,20 @@
 {
- "updated": "2026-11-24T08:44:38Z",
+ "updated": "2026-11-24T10:11:03Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Transfer Centre LIVE! 'Real Madrid close to agreeing new contract with Bellingham'",
+   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
+   "source": "Sky Sports",
+   "published": "2026-11-24T09:20:00Z",
+   "teams": [
+    "RMA"
+   ]
+  },
   {
    "title": "Papers: Brentford defender emerges as Man Utd target as January budget revealed",
    "link": "https://www.skysports.com/football/news/11095/13615837/man-utd-transfer-news-brentford-defender-nathan-collins-emerges-as-january-target-paper-talk",
@@ -23,15 +32,6 @@
    "published": "2026-11-23T19:37:00Z",
    "teams": [
     "CHE"
-   ]
-  },
-  {
-   "title": "Transfer Centre LIVE! Williams-Barnett agrees long-term Spurs contract",
-   "link": "https://www.skysports.com/football/live-blog/11095/12476234/transfer-centre-live-football-transfer-news-updates-and-rumours",
-   "source": "Sky Sports",
-   "published": "2026-11-23T17:30:00Z",
-   "teams": [
-    "TOT"
    ]
   },
   {
