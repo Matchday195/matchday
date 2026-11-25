@@ -1,11 +1,21 @@
 {
- "updated": "2026-11-25T21:58:04Z",
+ "updated": "2026-11-25T22:57:00Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Isak and Wirtz on target as resurgent Liverpool sweep aside Club Brugge",
+   "link": "https://www.theguardian.com/football/2026/nov/25/club-brugge-liverpool-champions-league-match-report",
+   "source": "The Guardian",
+   "published": "2026-11-25T22:04:10Z",
+   "teams": [
+    "LIV",
+    "BRU"
+   ]
+  },
   {
    "title": "Papers: Liverpool agree deal to sign Senegal teenager Ndiaye",
    "link": "https://www.skysports.com/football/news/11095/13616560/liverpool-transfer-news-sidy-barhama-ndiaye-agrees-deal-to-sign-for-reds-paper-talk",
@@ -14,15 +24,6 @@
    "teams": [
     "LIV",
     "N-SEN"
-   ]
-  },
-  {
-   "title": "Champions League: Gordon twice on target in Barcelona’s cruise at Sabah",
-   "link": "https://www.theguardian.com/football/2026/nov/25/champions-league-barcelona-psg-roma-lille-bayern-munich-villarreal",
-   "source": "The Guardian",
-   "published": "2026-11-25T20:16:42Z",
-   "teams": [
-    "BAR"
    ]
   },
   {
