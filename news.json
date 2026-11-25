@@ -1,11 +1,18 @@
 {
- "updated": "2026-11-25T18:54:01Z",
+ "updated": "2026-11-25T19:58:33Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
   "The Guardian"
  ],
  "items": [
+  {
+   "title": "Raheem Sterling’s rise and fall: a sign football is broken? - The Latest",
+   "link": "https://www.theguardian.com/news/video/2026/nov/25/raheem-sterlings-rise-and-fall-a-sign-football-is-broken-the-latest",
+   "source": "The Guardian",
+   "published": "2026-11-25T18:48:50Z",
+   "teams": []
+  },
   {
    "title": "Alejandro Garnacho and the curious case of Aston Villa’s outcast loanees | Ben Fisher",
    "link": "https://www.theguardian.com/football/2026/nov/25/alejandro-garnacho-aston-villa-loanees-unai-emery",
@@ -20,6 +27,13 @@
    "link": "https://www.skysports.com/football/live-blog/11095/13279316/nottingham-forest-transfers-latest-news-rumours-and-gossip-live-updates-goals-and-highlights",
    "source": "Sky Sports",
    "published": "2026-11-25T15:39:00Z",
+   "teams": []
+  },
+  {
+   "title": "Summer signings join Lionel Messi among MLS’s top earners: Takeaways from the league’s salary release",
+   "link": "https://www.theguardian.com/football/2026/nov/19/mls-salary-release-lionel-messi-spent-per-point",
+   "source": "The Guardian",
+   "published": "2026-11-19T18:01:17Z",
    "teams": []
   },
   {
