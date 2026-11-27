@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T17:11:24Z",
+ "updated": "2026-11-27T18:22:25Z",
  "sources": [
   "Sky Sports",
   "The Guardian",
@@ -7,12 +7,29 @@
  ],
  "items": [
   {
-   "title": "Manchester United extend Fernandes’s contract to 2028; Raya back in Arsenal training – football live",
-   "link": "https://www.theguardian.com/football/live/2026/nov/27/premier-league-news-levski-fans-marseille-violence-football",
-   "source": "The Guardian",
-   "published": "2026-11-27T16:52:49Z",
+   "title": "Aston Villa latest: Club open to terminating Garnacho loan",
+   "link": "https://www.skysports.com/football/live-blog/11095/13025491/aston-villa-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+   "source": "Sky Sports",
+   "published": "2026-11-27T18:00:00Z",
    "teams": [
-    "ARS",
+    "AVL"
+   ]
+  },
+  {
+   "title": "Arsenal latest: Arteta gives Raya update with Odegaard confident on new deal",
+   "link": "https://www.skysports.com/football/live-blog/11095/13025486/arsenal-transfer-news-rumours-and-gossip-live-updates-and-latest-on-deals-signings-loans-and-contracts",
+   "source": "Sky Sports",
+   "published": "2026-11-27T17:41:00Z",
+   "teams": [
+    "ARS"
+   ]
+  },
+  {
+   "title": "Manchester United extend Fernandes contract until 2028 to stop free transfer",
+   "link": "https://www.theguardian.com/football/2026/nov/27/manchester-united-bruno-fernandes-contract-2028-activate-option-mauricio-pochettino",
+   "source": "The Guardian",
+   "published": "2026-11-27T15:29:41Z",
+   "teams": [
     "MUN"
    ]
   },
